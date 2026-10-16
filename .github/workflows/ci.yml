@@ -20,3 +20,10 @@ jobs:
         run: cargo run --quiet --manifest-path /tmp/ain/Cargo.toml -- run render.ain
       - name: Verify Y4M video using Ain only
         run: cargo run --quiet --manifest-path /tmp/ain/Cargo.toml -- run tests/smoke.ain
+      - name: Generate high quality vector animation in Ain
+        env:
+          AIN_VIDEO_SPEC: examples/showcase.json
+          AIN_VIDEO_PREVIEW: showcase.svg
+        run: cargo run --quiet --manifest-path /tmp/ain/Cargo.toml -- run preview.ain
+      - name: Verify vector animation in Ain
+        run: cargo run --quiet --manifest-path /tmp/ain/Cargo.toml -- run tests/preview_smoke.ain
