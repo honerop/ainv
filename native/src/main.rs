@@ -2,7 +2,7 @@ mod scene;
 
 use std::{env, error::Error, fs, fs::File, path::Path, io::BufReader};
 use mp4::{AvcConfig, Bytes, Mp4Config, Mp4Sample, Mp4Writer, TrackConfig};
-use openh264::{encoder::Encoder, formats::{RgbSliceU8, YUVBuffer}};
+use openh264::{encoder::{Encoder, EncoderConfig, BitRate, FrameRate, IntraFramePeriod, VuiConfig}, formats::{RgbSliceU8, YUVBuffer}, OpenH264API};
 use serde_json::Value;
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
@@ -56,7 +56,15 @@ fn export(spec: &Path, output: &Path) -> Result<()> {
     let mut options = resvg::usvg::Options::default();
     options.fontdb_mut().load_system_fonts();
 
-    let mut encoder = Encoder::new()?;
+    // Timeline export must never drop a frame, even when the image is static.
+    // Configure OpenH264's temporal rate explicitly, with adequate HD bitrate.
+    let encoder_config = EncoderConfig::new()
+        .max_frame_rate(FrameRate::from_hz(fps as f32))
+        .bitrate(BitRate::from_bps(8_000_000))
+        .skip_frames(false)
+        .intra_frame_period(IntraFramePeriod::from_num_frames(fps.saturating_mul(2)))
+        .vui(VuiConfig::srgb());
+    let mut encoder = Encoder::with_api_config(OpenH264API::from_source(), encoder_config)?;
     let config = Mp4Config {
         major_brand: "isom".parse()?,
         minor_version: 512,

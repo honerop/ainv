@@ -39,6 +39,8 @@ jobs:
         run: cargo test --manifest-path native/Cargo.toml
       - name: Render and verify playable H264 MP4 without ffmpeg
         run: cargo run --release --manifest-path native/Cargo.toml -- examples/mp4-smoke.json smoke.mp4
+      - name: Verify unskipped frames beyond frame 24
+        run: cargo run --release --manifest-path native/Cargo.toml -- examples/mp4-static-frames.json static.mp4
       - name: Check real MP4 file type and nonzero size
         run: |
           test -s smoke.mp4
