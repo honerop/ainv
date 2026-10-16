@@ -27,9 +27,9 @@ weight name = if == name "bold" "700" if == name "light" "300" "500"
 initial shape key = ival obj shape "from" key ival shape key 0
 target shape key = ival obj shape "to" key ival shape key 0
 ease_attr shape = if == sval shape "ease" "smooth" "smooth" " calcMode=\"spline\" keySplines=\"0.42 0 0.18 1\"" ""
-tween shape key begin duration = if == initial shape key target shape key "" empty "animate" j5 attr "attributeName" key nattr "from" initial shape key nattr "to" target shape key attr "begin" seconds begin attr "dur" seconds duration concat " fill=\"freeze\"" ease_attr shape
-motion shape keys begin duration index result = if >= index listlen keys result motion shape keys begin duration + index 1 concat result tween shape listat keys index begin duration
-geom shape keys begin duration = motion shape split keys "," begin duration 0 ""
+tween shape key begin duration = if == initial shape key target shape key "" empty "animate" j5 attr "attributeName" key nattr "from" initial shape key nattr "to" target shape key attr "begin" seconds begin concat attr "dur" seconds duration concat " fill=\"freeze\"" ease_attr shape
+motion shape fields begin duration index result = if >= index listlen fields result motion shape fields begin duration + index 1 concat result tween shape listat fields index begin duration
+geom shape fields begin duration = motion shape split fields "," begin duration 0 ""
 
 paint shape = j3 attr "fill" palette sval shape "fill" "cyan" attr "opacity" seconds_opacity shape ""
 seconds_opacity shape = if >= ival shape "opacity" 100 100 "1" if < ival shape "opacity" 100 0 "0" j3 "0." pad2 ival shape "opacity" 100 ""
