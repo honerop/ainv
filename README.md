@@ -7,6 +7,48 @@ JSON-driven video generation written entirely in [Ain](https://github.com/honero
 Python, FFmpeg, MoviePy, Manim, a browser, or an external encoder. It does not
 require changes to the Ain compiler or its standard library.
 
+## High-quality animated SVG director
+
+The original Y4M prototype is very low resolution because Ain currently writes
+UTF-8 text rather than raw bytes. A second, much more capable renderer is now
+written entirely in Ain at `preview.ain`. It creates one standalone **animated
+SVG** with vector-quality graphics, styled text, curves and timelines.
+
+Try the three-scene 1280×720 mathematical explainer:
+
+```sh
+AIN_VIDEO_SPEC=examples/showcase.json \
+AIN_VIDEO_PREVIEW=showcase.svg \
+ainc run preview.ain
+
+xdg-open showcase.svg
+```
+
+The SVG animation plays in modern browsers. It stays sharp at higher
+resolutions, with scalable text and shapes, rather than the previous tiny
+pixelated font. You can use `xdg-open` or open the SVG in your preferred
+browser. **This is animated vector content, not a downloadable MP4 video**:
+the current Ain-only Y4M writer remains a separate basic video prototype.
+
+### Vector JSON scene features
+
+- Multiple sequential scenes with `frames` or `duration` (seconds), each
+  with its own dark-theme background.
+- `rect` (including rounded corners), `circle`, `line`, `arrow`,
+  `polyline` (animated hand-drawn chart curve), and `text`.
+- Properties with `from` and `to` keyframes, interpolated with linear or
+  smoothly eased animations.
+- Unicode and mathematical symbols in scalable text.
+- Named color palette: `ink`, `navy`, `panel`, `slate`, `muted`,
+  `white`, `ice`, `cyan`, `blue`, `purple`, `rose`,
+  `red`, `orange`, `yellow`, `green`.
+- Shape opacity, SVG-native resolution independence, and no video-processing
+  dependency. The generator is 100% Ain.
+
+See [examples/showcase.json](examples/showcase.json) and
+[preview.ain](preview.ain) for the current format. The Ain smoke test
+is `tests/preview_smoke.ain`.
+
 ## Quick start
 
 Install or build the Ain compiler (`ainc`), then run this command from the
