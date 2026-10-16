@@ -22,6 +22,8 @@ seconds ms = j4 str / ms 1000 "." pad3 % ms 1000 "s"
 # Named design-system colors prevent invalid/unescaped user-supplied SVG attributes.
 palette value = if == value "cyan" "#48dff0" if == value "ice" "#b9f9ff" if == value "white" "#f1f7ff" if == value "muted" "#8b9cb2" if == value "navy" "#101c34" if == value "ink" "#080d19" if == value "panel" "#17253b" if == value "slate" "#324059" if == value "blue" "#6189ff" if == value "purple" "#b592ff" if == value "rose" "#ff8da9" if == value "red" "#ff7088" if == value "orange" "#ffbd75" if == value "yellow" "#ffe18c" if == value "green" "#7df1bc" if == value "black" "#000000" "#48dff0"
 
+anchor name = if == name "middle" "middle" if == name "end" "end" "start"
+weight name = if == name "bold" "700" if == name "light" "300" "500"
 initial shape key = ival obj shape "from" key ival shape key 0
 target shape key = ival obj shape "to" key ival shape key 0
 ease_attr shape = if == sval shape "ease" "smooth" "smooth" " calcMode=\"spline\" keySplines=\"0.42 0 0.18 1\"" ""
@@ -41,11 +43,11 @@ line_shape shape begin duration = node "line" j5 nattr "x1" initial shape "x1" n
 arrow_shape shape begin duration = node "line" j5 nattr "x1" initial shape "x1" nattr "y1" initial shape "y1" nattr "x2" initial shape "x2" nattr "y2" initial shape "y2" concat stroke shape " marker-end=\"url(#ainv-arrow)\"" geom shape "x1,y1,x2,y2" begin duration
 
 # Unicode text, including mathematical symbols, renders using system fonts.
-text_shape shape begin duration = node "text" j5 nattr "x" initial shape "x" nattr "y" initial shape "y" nattr "font-size" ival shape "font_size" 42 attr "text-anchor" sval shape "anchor" "start" concat attr "fill" palette sval shape "fill" "white" attr "font-weight" sval shape "weight" "500" j3 esc sval shape "value" "" geom shape "x,y" begin duration ""
+text_shape shape begin duration = node "text" j5 nattr "x" initial shape "x" nattr "y" initial shape "y" nattr "font-size" ival shape "font_size" 42 attr "text-anchor" anchor sval shape "anchor" "start" concat attr "fill" palette sval shape "fill" "white" attr "font-weight" weight sval shape "weight" "normal" j3 esc sval shape "value" "" geom shape "x,y" begin duration ""
 
 point point = j3 str ival point "x" 0 "," str ival point "y" 0
 point_str points index result = if >= index size points result point_str points + index 1 j3 result if == index 0 "" " " point get points index
-polyline shape begin duration = node "polyline" j5 attr "points" point_str field shape "points" 0 "" stroke shape " fill=\"none\"" attr "stroke-dasharray" "2400" attr "stroke-dashoffset" "2400" "" empty "animate" j5 attr "attributeName" "stroke-dashoffset" attr "from" "2400" attr "to" "0" attr "begin" seconds begin attr "dur" seconds duration concat " fill=\"freeze\"" ease_attr shape
+polyline shape begin duration = node "polyline" j5 attr "points" point_str field shape "points" 0 "" stroke shape " fill=\"none\"" attr "stroke-dasharray" "2400" attr "stroke-dashoffset" "2400" empty "animate" j5 attr "attributeName" "stroke-dashoffset" attr "from" "2400" attr "to" "0" attr "begin" seconds begin attr "dur" seconds duration concat " fill=\"freeze\"" ease_attr shape
 
 shape_svg shape begin duration = if == sval shape "kind" "" "rect" rectangle shape begin duration if == sval shape "kind" "" "circle" round_shape shape begin duration if == sval shape "kind" "" "text" text_shape shape begin duration if == sval shape "kind" "" "line" line_shape shape begin duration if == sval shape "kind" "" "arrow" arrow_shape shape begin duration if == sval shape "kind" "" "polyline" polyline shape begin duration ""
 shapes_svg shapes begin duration index result = if >= index size shapes result shapes_svg shapes begin duration + index 1 concat result shape_svg get shapes index begin duration
