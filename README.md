@@ -32,6 +32,62 @@ The `ainc` and Cargo commands **compile and run the Ain application**, rather
 than acting as the video renderer. All of the rendering and file output happens
 in `render.ain`.
 
+## Complete NixOS workflow
+
+No global installs, and the video renderer does not require Python, FFmpeg,
+librsvg or any non-Ain application code. The compiler itself is built with Rust.
+
+If your terminal does not already have flakes enabled, use
+`nix --extra-experimental-features 'nix-command flakes' shell ...` in place of
+`nix shell ...`.
+
+Open a temporary development shell, clone the compiler and video app, build
+the compiler, and run the demo:
+
+```sh
+nix shell nixpkgs#git nixpkgs#cargo nixpkgs#rustc
+
+mkdir -p ~/dev
+cd ~/dev
+git clone https://github.com/honerop/ain.git
+git clone https://github.com/honerop/ainv.git
+
+cargo build --release --manifest-path ain/Cargo.toml
+
+cd ainv
+../ain/target/release/ainc --version
+../ain/target/release/ainc check render.ain
+
+AIN_VIDEO_SPEC=examples/explainer.json \
+AIN_VIDEO_OUTPUT=explainer.y4m \
+../ain/target/release/ainc run render.ain
+
+../ain/target/release/ainc run tests/smoke.ain
+ls -lh explainer.y4m
+```
+
+This makes `~/dev/ainv/explainer.y4m`. Generating the uncompressed video
+may take some time because the initial implementation constructs pixel strings
+one sample at a time.
+
+For optional playback only (not rendering or encoding), install/run a player,
+for example `nix shell nixpkgs#mpv -c mpv explainer.y4m`.
+A player may use decoder libraries internally; ainv does not call them.
+
+For subsequent runs:
+
+```sh
+cd ~/dev/ainv
+git pull --ff-only
+cd ../ain
+git pull --ff-only
+cargo build --release
+cd ../ainv
+AIN_VIDEO_SPEC=examples/explainer.json \
+AIN_VIDEO_OUTPUT=explainer.y4m \
+../ain/target/release/ainc run render.ain
+```
+
 ## JSON input
 
 ```json
