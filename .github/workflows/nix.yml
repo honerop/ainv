@@ -1,0 +1,43 @@
+name: Nix run verification
+
+on:
+  push:
+    branches: [feature/nix-run-ainv]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Generate cargo lockfile for reproducible Nix builds
+        run: cargo generate-lockfile --manifest-path native/Cargo.toml
+      - name: Upload generated lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: ainv-native-lock
+          path: native/Cargo.lock
+          retention-days: 2
+  nix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v17
+      - name: Verify Nix package and flake evaluation
+        run: nix flake check --show-trace
+      - name: Build standalone renderer
+        run: nix build .#default -L
+      - name: Verify simple MP4 with nix run
+        run: |
+          nix run . -- examples/mp4-smoke.json smoke.mp4
+          test -s smoke.mp4
+          file smoke.mp4 | grep -qi 'ISO Media'
+      - name: Verify default command outputs showcase MP4
+        run: |
+          mkdir -p /tmp/ainv-run-check
+          cd /tmp/ainv-run-check
+          nix run "${GITHUB_WORKSPACE}" 
+          test -s showcase.mp4
+          file showcase.mp4 | grep -qi 'ISO Media'
