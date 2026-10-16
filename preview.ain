@@ -45,8 +45,8 @@ arrow_shape shape begin duration = node "line" j5 nattr "x1" initial shape "x1" 
 # Unicode text, including mathematical symbols, renders using system fonts.
 text_shape shape begin duration = node "text" j5 nattr "x" initial shape "x" nattr "y" initial shape "y" nattr "font-size" ival shape "font_size" 42 attr "text-anchor" anchor sval shape "anchor" "start" concat attr "fill" palette sval shape "fill" "white" attr "font-weight" weight sval shape "weight" "normal" j3 esc sval shape "value" "" geom shape "x,y" begin duration ""
 
-point point = j3 str ival point "x" 0 "," str ival point "y" 0
-point_str points index result = if >= index size points result point_str points + index 1 j3 result if == index 0 "" " " point get points index
+as_point value = j3 str ival value "x" 0 "," str ival value "y" 0
+point_str points index result = if >= index size points result point_str points + index 1 j3 result if == index 0 "" " " as_point get points index
 polyline shape begin duration = node "polyline" j5 attr "points" point_str field shape "points" 0 "" stroke shape " fill=\"none\"" attr "stroke-dasharray" "2400" attr "stroke-dashoffset" "2400" empty "animate" j5 attr "attributeName" "stroke-dashoffset" attr "from" "2400" attr "to" "0" attr "begin" seconds begin attr "dur" seconds duration concat " fill=\"freeze\"" ease_attr shape
 
 shape_svg shape begin duration = if == sval shape "kind" "" "rect" rectangle shape begin duration if == sval shape "kind" "" "circle" round_shape shape begin duration if == sval shape "kind" "" "text" text_shape shape begin duration if == sval shape "kind" "" "line" line_shape shape begin duration if == sval shape "kind" "" "arrow" arrow_shape shape begin duration if == sval shape "kind" "" "polyline" polyline shape begin duration ""
