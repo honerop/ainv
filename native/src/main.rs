@@ -55,6 +55,11 @@ fn export(spec: &Path, output: &Path) -> Result<()> {
 
     let mut options = resvg::usvg::Options::default();
     options.fontdb_mut().load_system_fonts();
+    // Nix installs fonts in immutable store paths rather than /usr/share/fonts.
+    // The flake wrapper supplies the bundled DejaVu font directory explicitly.
+    if let Ok(dir) = env::var("AINV_FONT_DIR") {
+        options.fontdb_mut().load_fonts_dir(dir);
+    }
 
     // Timeline export must never drop a frame, even when the image is static.
     // Configure OpenH264's temporal rate explicitly, with adequate HD bitrate.

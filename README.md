@@ -7,6 +7,41 @@ JSON-driven video generation written entirely in [Ain](https://github.com/honero
 Python, FFmpeg, MoviePy, Manim, a browser, or an external encoder. It does not
 require changes to the Ain compiler or its standard library.
 
+## Run with NixOS (one command)
+
+From **any directory** on NixOS with flakes enabled:
+
+```sh
+nix run github:honerop/ainv
+```
+
+This generates **`./showcase.mp4`**: a real full-color H.264 MP4 video,
+1280×720, 30 FPS, 13 seconds long. Nothing needs to be cloned or installed
+globally. On the first run Nix builds the standalone renderer and its bundled
+dependencies; Nix caches the output for subsequent runs. The video is silent
+(no audio track), and the default showcase is the educational motion-graphics
+sample from `examples/showcase.json`.
+
+To render your own AinV JSON file (the paths are relative to your current
+directory):
+
+```sh
+nix run github:honerop/ainv -- ./my-video.json ./my-video.mp4
+```
+
+Supplying only the JSON path writes `output.mp4`:
+
+```sh
+nix run github:honerop/ainv -- ./my-video.json
+```
+
+The flake includes the native H.264 encoder, MP4 muxer, SVG rasterizer,
+DejaVu fonts, and a pinned Rust dependency lockfile. It does not require a
+manual `rustc`, `cargo`, `nasm`, `ffmpeg`, or `python` invocation.
+If flakes are not enabled in your Nix installation, add
+`--extra-experimental-features 'nix-command flakes'` immediately after
+`nix`.
+
 ## Real MP4 export (full-color, H.264)
 
 The new `native/` backend exports the **same JSON scene timeline** to a real

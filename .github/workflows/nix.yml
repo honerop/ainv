@@ -1,0 +1,33 @@
+name: Nix run verification
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  nix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v17
+      - name: Verify Nix flake checks
+        run: nix flake check --show-trace
+      - name: Build standalone renderer
+        run: nix build .#default -L
+      - name: Verify custom JSON MP4 export
+        run: |
+          nix run . -- examples/mp4-smoke.json smoke.mp4
+          test -s smoke.mp4
+          file smoke.mp4 | grep -qi 'ISO Media'
+      - name: Verify default nix run creates showcase.mp4
+        run: |
+          mkdir -p /tmp/ainv-run-check
+          cd /tmp/ainv-run-check
+          nix run "${GITHUB_WORKSPACE}"
+          test -s showcase.mp4
+          file showcase.mp4 | grep -qi 'ISO Media'
