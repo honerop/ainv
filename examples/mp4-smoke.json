@@ -1,0 +1,46 @@
+{
+  "width": 160,
+  "height": 96,
+  "fps": 4,
+  "scenes": [
+    {
+      "frames": 4,
+      "background": "ink",
+      "elements": [
+        {
+          "kind": "rect",
+          "x": 8,
+          "y": 10,
+          "width": 144,
+          "height": 75,
+          "radius": 8,
+          "fill": "panel"
+        },
+        {
+          "kind": "text",
+          "x": 20,
+          "y": 50,
+          "value": "AINV",
+          "font_size": 25,
+          "fill": "white",
+          "weight": "bold",
+          "from": {
+            "x": 0
+          },
+          "ease": "smooth"
+        },
+        {
+          "kind": "circle",
+          "cx": 30,
+          "cy": 65,
+          "r": 8,
+          "fill": "cyan",
+          "from": {
+            "cx": 130
+          },
+          "ease": "smooth"
+        }
+      ]
+    }
+  ]
+}

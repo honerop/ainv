@@ -1,0 +1,33 @@
+name: Render full showcase MP4
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - native/**
+      - examples/showcase.json
+      - .github/workflows/render-showcase.yml
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install OpenH264 assembler and fonts
+        run: sudo apt-get update && sudo apt-get install -y nasm fonts-dejavu-core
+      - name: Render 1280x720 full H264 MP4 showcase
+        run: cargo run --release --manifest-path native/Cargo.toml -- examples/showcase.json showcase.mp4
+      - name: Verify nonempty real MP4
+        run: |
+          test -s showcase.mp4
+          od -An -tx1 -N 8 showcase.mp4 | grep -q '66 74 79 70'
+      - name: Upload downloadable MP4
+        uses: actions/upload-artifact@v4
+        with:
+          name: ainv-showcase-mp4
+          path: showcase.mp4
+          if-no-files-found: error
+          retention-days: 14
