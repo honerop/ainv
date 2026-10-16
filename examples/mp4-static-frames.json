@@ -1,0 +1,31 @@
+{
+  "width": 320,
+  "height": 180,
+  "fps": 30,
+  "scenes": [
+    {
+      "frames": 36,
+      "background": "ink",
+      "elements": [
+        {
+          "kind": "rect",
+          "x": 30,
+          "y": 30,
+          "width": 250,
+          "height": 110,
+          "radius": 16,
+          "fill": "panel"
+        },
+        {
+          "kind": "text",
+          "x": 55,
+          "y": 96,
+          "value": "STABLE FRAMES",
+          "font_size": 28,
+          "fill": "white",
+          "weight": "bold"
+        }
+      ]
+    }
+  ]
+}
