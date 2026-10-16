@@ -1,0 +1,22 @@
+name: Ain video smoke test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Check out Ain compiler
+        run: git clone --depth 1 https://github.com/honerop/ain.git /tmp/ain
+      - name: Generate example video using Ain only
+        env:
+          AIN_VIDEO_SPEC: examples/explainer.json
+          AIN_VIDEO_OUTPUT: explainer.y4m
+        run: cargo run --quiet --manifest-path /tmp/ain/Cargo.toml -- run render.ain
+      - name: Verify Y4M video using Ain only
+        run: cargo run --quiet --manifest-path /tmp/ain/Cargo.toml -- run tests/smoke.ain
