@@ -7,6 +7,57 @@ JSON-driven video generation written entirely in [Ain](https://github.com/honero
 Python, FFmpeg, MoviePy, Manim, a browser, or an external encoder. It does not
 require changes to the Ain compiler or its standard library.
 
+## Real MP4 export (full-color, H.264)
+
+The new `native/` backend exports the **same JSON scene timeline** to a real
+H.264/AVC `.mp4`, frame by frame. It renders text, rounded shapes, curves,
+arrows, colors, keyframes, easing, and scene changes at the requested resolution.
+The standard `examples/showcase.json` is 1280×720 at 30 FPS.
+
+It uses `resvg` for rasterizing SVG vector scenes, Cisco's OpenH264 encoder,
+and the Rust `mp4` muxer. **No Python, FFmpeg, headless browser, or Godot.**
+
+**Architecture clarification:** the JSON scripting and original animated SVG
+authoring are in Ain, while full-color MP4 compression now needs a native
+*Rust codec backend* in `ainv`. Ain's current UTF-8-only `fswrite` cannot
+produce H.264 binary video on its own. This is a pragmatic native library
+approach, like other languages' multimedia libraries, and makes no changes to
+`honerop/ain`. It is not strictly an all-Ain encoder.
+
+On NixOS, in a terminal, copy and paste this whole block. It works with the
+existing `ainv-workspace` and does not delete your directories:
+
+```sh
+nix --extra-experimental-features 'nix-command flakes' \
+  shell nixpkgs#git nixpkgs#cargo nixpkgs#rustc nixpkgs#gcc nixpkgs#nasm \
+  -c bash -c '
+set -euo pipefail
+cd "$HOME/dev/ainv-workspace/ainv"
+git pull --ff-only
+cargo run --release --manifest-path native/Cargo.toml -- examples/showcase.json showcase.mp4
+ls -lh showcase.mp4
+'
+```
+
+This writes `~/dev/ainv-workspace/ainv/showcase.mp4`. To play it without
+relying on your desktop's misleading default file associations:
+
+```sh
+nix shell nixpkgs#mpv -c mpv "$HOME/dev/ainv-workspace/ainv/showcase.mp4"
+```
+
+To check the fast test render instead of a full 13-second HD video:
+
+```sh
+cargo run --release --manifest-path native/Cargo.toml -- examples/mp4-smoke.json test.mp4
+```
+
+The MP4 exporter produces **silent video** for now. The full showcase render
+encodes hundreds of HD frames and can be substantially slower than generating
+the vector SVG. The MP4 backend also has stricter limits than SVG: even
+dimensions in 64×64..1920×1080, FPS in 1..60 and no more than 18000 frames.
+The native codec source in `native/src` is independent of Ain compiler code.
+
 ## High-quality animated SVG director
 
 The original Y4M prototype is very low resolution because Ain currently writes
