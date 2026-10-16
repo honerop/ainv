@@ -53,9 +53,9 @@ shape_svg shape begin duration = if == sval shape "kind" "" "rect" rectangle sha
 shapes_svg shapes begin duration index result = if >= index size shapes result shapes_svg shapes begin duration + index 1 concat result shape_svg get shapes index begin duration
 
 span scene fps = if hasfield scene "frames" ival scene "frames" 1 * ival scene "duration" 1 fps
-duration scene fps = / * span scene fps 1000 fps
-scene_svg scene begin fps width height = node "g" " opacity=\"0\"" concat empty "set" j4 attr "attributeName" "opacity" attr "to" "1" attr "begin" seconds begin concat attr "dur" seconds duration scene fps " fill=\"remove\"" j3 bg scene width height shapes_svg field scene "elements" begin duration scene fps 0 "" ""
-render_scenes scenes fps width height index begin output = if >= index size scenes output render_scenes scenes fps width height + index 1 + begin duration get scenes index fps concat output scene_svg get scenes index begin fps width height
+scene_millis scene fps = / * span scene fps 1000 fps
+scene_svg scene begin fps width height = node "g" " opacity=\"0\"" concat empty "set" j4 attr "attributeName" "opacity" attr "to" "1" attr "begin" seconds begin concat attr "dur" seconds scene_millis scene fps " fill=\"remove\"" j3 bg scene width height shapes_svg field scene "elements" begin scene_millis scene fps 0 "" ""
+render_scenes scenes fps width height index begin output = if >= index size scenes output render_scenes scenes fps width height + index 1 + begin scene_millis get scenes index fps concat output scene_svg get scenes index begin fps width height
 
 arrow_def = "<defs><marker id=\"ainv-arrow\" markerWidth=\"10\" markerHeight=\"10\" refX=\"9\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L0,6 L9,3 Z\" fill=\"#48dff0\"/></marker></defs>"
 svg_document project = node "svg" j5 attr "xmlns" "http://www.w3.org/2000/svg" attr "width" str ival project "width" 1280 attr "height" str ival project "height" 720 attr "viewBox" j5 "0 0 " str ival project "width" 1280 " " str ival project "height" 720 attr "role" "img" j3 arrow_def render_scenes field project "scenes" max 1 ival project "fps" 30 ival project "width" 1280 ival project "height" 720 0 0 "" ""
