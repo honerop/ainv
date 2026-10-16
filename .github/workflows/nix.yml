@@ -6,6 +6,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   lock:
     runs-on: ubuntu-latest
@@ -14,13 +17,29 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Generate cargo lockfile for reproducible Nix builds
         run: cargo generate-lockfile --manifest-path native/Cargo.toml
-      - name: Upload generated lockfile
+      - uses: DeterminateSystems/nix-installer-action@v17
+      - name: Pin flake dependencies
+        run: nix flake lock
+      - name: Commit reproducible Nix and Cargo lockfiles
+        if: github.event_name == 'push'
+        run: |
+          git add --force native/Cargo.lock flake.lock
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'Pin Rust and Nix dependencies for reproducible nix run'
+            git push origin HEAD:feature/nix-run-ainv
+          fi
+      - name: Upload lockfile snapshot
         uses: actions/upload-artifact@v4
         with:
           name: ainv-native-lock
-          path: native/Cargo.lock
+          path: |
+            native/Cargo.lock
+            flake.lock
           retention-days: 2
   nix:
+    needs: lock
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
