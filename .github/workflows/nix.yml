@@ -2,61 +2,32 @@ name: Nix run verification
 
 on:
   push:
-    branches: [feature/nix-run-ainv]
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  lock:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Generate cargo lockfile for reproducible Nix builds
-        run: cargo generate-lockfile --manifest-path native/Cargo.toml
-      - uses: DeterminateSystems/nix-installer-action@v17
-      - name: Pin flake dependencies
-        run: nix flake lock
-      - name: Commit reproducible Nix and Cargo lockfiles
-        if: github.event_name == 'push'
-        run: |
-          git add --force native/Cargo.lock flake.lock
-          if ! git diff --cached --quiet; then
-            git config user.name 'github-actions[bot]'
-            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'Pin Rust and Nix dependencies for reproducible nix run'
-            git push origin HEAD:feature/nix-run-ainv
-          fi
-      - name: Upload lockfile snapshot
-        uses: actions/upload-artifact@v4
-        with:
-          name: ainv-native-lock
-          path: |
-            native/Cargo.lock
-            flake.lock
-          retention-days: 2
   nix:
-    needs: lock
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@v17
-      - name: Verify Nix package and flake evaluation
+      - name: Verify Nix flake checks
         run: nix flake check --show-trace
       - name: Build standalone renderer
         run: nix build .#default -L
-      - name: Verify simple MP4 with nix run
+      - name: Verify custom JSON MP4 export
         run: |
           nix run . -- examples/mp4-smoke.json smoke.mp4
           test -s smoke.mp4
           file smoke.mp4 | grep -qi 'ISO Media'
-      - name: Verify default command outputs showcase MP4
+      - name: Verify default nix run creates showcase.mp4
         run: |
           mkdir -p /tmp/ainv-run-check
           cd /tmp/ainv-run-check
-          nix run "${GITHUB_WORKSPACE}" 
+          nix run "${GITHUB_WORKSPACE}"
           test -s showcase.mp4
           file showcase.mp4 | grep -qi 'ISO Media'
