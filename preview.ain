@@ -5,7 +5,7 @@
 
 sval obj key fallback = if hasfield obj key astext field obj key fallback
 ival obj key fallback = if hasfield obj key asint field obj key fallback
-obj obj key = if hasfield obj key field obj key record _
+object_at source key = if hasfield source key field source key record _
 j3 a b c = concat concat a b c
 j4 a b c d = concat j3 a b c d
 j5 a b c d e = concat j4 a b c d e
@@ -24,8 +24,8 @@ palette value = if == value "cyan" "#48dff0" if == value "ice" "#b9f9ff" if == v
 
 anchor name = if == name "middle" "middle" if == name "end" "end" "start"
 weight name = if == name "bold" "700" if == name "light" "300" "500"
-initial shape key = ival obj shape "from" key ival shape key 0
-target shape key = ival obj shape "to" key ival shape key 0
+initial shape key = ival object_at shape "from" key ival shape key 0
+target shape key = ival object_at shape "to" key ival shape key 0
 ease_attr shape = if == sval shape "ease" "smooth" "smooth" " calcMode=\"spline\" keySplines=\"0.42 0 0.18 1\"" ""
 tween shape key begin duration = if == initial shape key target shape key "" empty "animate" j5 attr "attributeName" key nattr "from" initial shape key nattr "to" target shape key attr "begin" seconds begin concat attr "dur" seconds duration concat " fill=\"freeze\"" ease_attr shape
 motion shape fields begin duration index result = if >= index listlen fields result motion shape fields begin duration + index 1 concat result tween shape listat fields index begin duration
