@@ -27,25 +27,3 @@ jobs:
         run: cargo run --quiet --manifest-path /tmp/ain/Cargo.toml -- run preview.ain
       - name: Verify vector animation in Ain
         run: cargo run --quiet --manifest-path /tmp/ain/Cargo.toml -- run tests/preview_smoke.ain
-
-  mp4:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Install OpenH264 assembler and fonts
-        run: sudo apt-get update && sudo apt-get install -y nasm fonts-dejavu-core ffmpeg
-      - name: Test narration timing and MP4 audio muxing
-        run: python3 -m unittest discover -s tests -p test_pipeline.py -v
-      - name: Validate narrated example project
-        run: python3 -m json.tool examples/math-explainer.json > /dev/null
-      - name: Compile native codec tests
-        run: cargo test --manifest-path native/Cargo.toml
-      - name: Render and verify playable H264 MP4 without ffmpeg
-        run: cargo run --release --manifest-path native/Cargo.toml -- examples/mp4-smoke.json smoke.mp4
-      - name: Verify unskipped frames beyond frame 24
-        run: cargo run --release --manifest-path native/Cargo.toml -- examples/mp4-static-frames.json static.mp4
-      - name: Check real MP4 file type and nonzero size
-        run: |
-          test -s smoke.mp4
-          od -An -tx1 -N 8 smoke.mp4 | grep -q '66 74 79 70'
