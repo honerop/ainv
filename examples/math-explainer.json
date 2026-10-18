@@ -1,0 +1,402 @@
+{
+  "width": 1280,
+  "height": 720,
+  "fps": 30,
+  "voice": "en-US-AndrewNeural",
+  "voice_rate": "-5%",
+  "scenes": [
+    {
+      "duration": 5,
+      "background": "ink",
+      "narration": "A function is a machine for turning one number into another. Consider this simple rule: y equals x squared. What does it look like?",
+      "elements": [
+        {
+          "kind": "text",
+          "x": 94,
+          "y": 100,
+          "value": "01  /  THE SHAPE OF A FUNCTION",
+          "font_size": 25,
+          "weight": "bold",
+          "fill": "cyan",
+          "from": {
+            "opacity": 0
+          },
+          "opacity": 100,
+          "ease": "smooth"
+        },
+        {
+          "kind": "text",
+          "x": 90,
+          "y": 187,
+          "value": "A rule becomes a shape.",
+          "font_size": 62,
+          "weight": "bold",
+          "fill": "white",
+          "from": {
+            "y": 245
+          },
+          "ease": "smooth"
+        },
+        {
+          "kind": "text",
+          "x": 94,
+          "y": 245,
+          "value": "y = x²",
+          "font_size": 46,
+          "weight": "bold",
+          "fill": "ice"
+        },
+        {
+          "kind": "rect",
+          "x": 570,
+          "y": 115,
+          "width": 615,
+          "height": 485,
+          "radius": 24,
+          "fill": "panel",
+          "from": {
+            "opacity": 0
+          }
+        },
+        {
+          "kind": "axes",
+          "x": 630,
+          "y": 175,
+          "width": 490,
+          "height": 340,
+          "x_min": -3.2,
+          "x_max": 3.2,
+          "y_min": -1,
+          "y_max": 9,
+          "stroke": "slate"
+        },
+        {
+          "kind": "plot",
+          "x": 630,
+          "y": 175,
+          "width": 490,
+          "height": 340,
+          "x_min": -3.2,
+          "x_max": 3.2,
+          "y_min": -1,
+          "y_max": 9,
+          "function": "quadratic",
+          "stroke": "cyan",
+          "stroke_width": 6
+        },
+        {
+          "kind": "text",
+          "x": 115,
+          "y": 355,
+          "value": "Every input creates",
+          "font_size": 29,
+          "fill": "muted"
+        },
+        {
+          "kind": "text",
+          "x": 115,
+          "y": 400,
+          "value": "one output.",
+          "font_size": 29,
+          "fill": "muted"
+        },
+        {
+          "kind": "rect",
+          "x": 94,
+          "y": 510,
+          "width": 350,
+          "height": 5,
+          "radius": 3,
+          "fill": "cyan",
+          "from": {
+            "width": 0
+          },
+          "ease": "smooth"
+        }
+      ]
+    },
+    {
+      "duration": 5,
+      "background": "ink",
+      "narration": "The shape changes when we add a constant. The original curve stays in place, while the new one shifts up by two. No point needs to be moved by hand.",
+      "elements": [
+        {
+          "kind": "text",
+          "x": 94,
+          "y": 100,
+          "value": "02  /  TRANSFORMATIONS",
+          "font_size": 25,
+          "weight": "bold",
+          "fill": "cyan"
+        },
+        {
+          "kind": "text",
+          "x": 94,
+          "y": 171,
+          "value": "Change the rule. Move the curve.",
+          "font_size": 53,
+          "weight": "bold",
+          "fill": "white"
+        },
+        {
+          "kind": "rect",
+          "x": 74,
+          "y": 224,
+          "width": 1132,
+          "height": 414,
+          "radius": 24,
+          "fill": "panel"
+        },
+        {
+          "kind": "axes",
+          "x": 187,
+          "y": 266,
+          "width": 895,
+          "height": 308,
+          "x_min": -4,
+          "x_max": 4,
+          "y_min": -1,
+          "y_max": 9,
+          "stroke": "slate"
+        },
+        {
+          "kind": "plot",
+          "x": 187,
+          "y": 266,
+          "width": 895,
+          "height": 308,
+          "x_min": -4,
+          "x_max": 4,
+          "y_min": -1,
+          "y_max": 9,
+          "function": "quadratic",
+          "stroke": "muted",
+          "stroke_width": 4,
+          "draw": false
+        },
+        {
+          "kind": "plot",
+          "x": 187,
+          "y": 266,
+          "width": 895,
+          "height": 308,
+          "x_min": -4,
+          "x_max": 4,
+          "y_min": -1,
+          "y_max": 9,
+          "function": "quadratic",
+          "c": 2,
+          "stroke": "cyan",
+          "stroke_width": 6
+        },
+        {
+          "kind": "text",
+          "x": 650,
+          "y": 331,
+          "value": "y = x² + 2",
+          "font_size": 36,
+          "weight": "bold",
+          "fill": "cyan",
+          "from": {
+            "opacity": 0
+          }
+        },
+        {
+          "kind": "text",
+          "x": 650,
+          "y": 388,
+          "value": "y = x²",
+          "font_size": 31,
+          "fill": "muted"
+        },
+        {
+          "kind": "text",
+          "x": 104,
+          "y": 689,
+          "value": "A mathematical change has a visible meaning.",
+          "font_size": 22,
+          "fill": "muted"
+        }
+      ]
+    },
+    {
+      "duration": 5,
+      "background": "ink",
+      "narration": "Other rules create completely different motion. Sine rises and falls in a repeating wave. This is the same pattern behind sound, light, and many kinds of oscillation.",
+      "elements": [
+        {
+          "kind": "text",
+          "x": 94,
+          "y": 96,
+          "value": "03  /  A DIFFERENT PATTERN",
+          "font_size": 25,
+          "weight": "bold",
+          "fill": "cyan"
+        },
+        {
+          "kind": "text",
+          "x": 94,
+          "y": 174,
+          "value": "Some ideas repeat.",
+          "font_size": 62,
+          "weight": "bold",
+          "fill": "white"
+        },
+        {
+          "kind": "text",
+          "x": 100,
+          "y": 236,
+          "value": "y = sin(x)",
+          "font_size": 41,
+          "weight": "bold",
+          "fill": "ice"
+        },
+        {
+          "kind": "rect",
+          "x": 74,
+          "y": 273,
+          "width": 1132,
+          "height": 355,
+          "radius": 24,
+          "fill": "panel"
+        },
+        {
+          "kind": "axes",
+          "x": 155,
+          "y": 312,
+          "width": 980,
+          "height": 270,
+          "x_min": -7,
+          "x_max": 7,
+          "y_min": -1.5,
+          "y_max": 1.5,
+          "stroke": "slate"
+        },
+        {
+          "kind": "plot",
+          "x": 155,
+          "y": 312,
+          "width": 980,
+          "height": 270,
+          "x_min": -7,
+          "x_max": 7,
+          "y_min": -1.5,
+          "y_max": 1.5,
+          "function": "sin",
+          "stroke": "cyan",
+          "stroke_width": 7
+        },
+        {
+          "kind": "text",
+          "x": 95,
+          "y": 683,
+          "value": "Animation should explain the structure, not decorate it.",
+          "font_size": 23,
+          "fill": "muted"
+        }
+      ]
+    },
+    {
+      "duration": 5,
+      "background": "ink",
+      "narration": "We can even compare a function with its tangent. At x equals one, the parabola has slope two. The line touching it is y equals two x minus one.",
+      "elements": [
+        {
+          "kind": "text",
+          "x": 94,
+          "y": 96,
+          "value": "04  /  LOCAL CHANGE",
+          "font_size": 25,
+          "weight": "bold",
+          "fill": "cyan"
+        },
+        {
+          "kind": "text",
+          "x": 94,
+          "y": 168,
+          "value": "Zoom in on the slope.",
+          "font_size": 62,
+          "weight": "bold",
+          "fill": "white"
+        },
+        {
+          "kind": "rect",
+          "x": 74,
+          "y": 222,
+          "width": 1132,
+          "height": 406,
+          "radius": 24,
+          "fill": "panel"
+        },
+        {
+          "kind": "axes",
+          "x": 165,
+          "y": 264,
+          "width": 920,
+          "height": 324,
+          "x_min": -2,
+          "x_max": 3,
+          "y_min": -3,
+          "y_max": 8,
+          "stroke": "slate"
+        },
+        {
+          "kind": "plot",
+          "x": 165,
+          "y": 264,
+          "width": 920,
+          "height": 324,
+          "x_min": -2,
+          "x_max": 3,
+          "y_min": -3,
+          "y_max": 8,
+          "function": "quadratic",
+          "stroke": "cyan",
+          "stroke_width": 6,
+          "draw": false
+        },
+        {
+          "kind": "plot",
+          "x": 165,
+          "y": 264,
+          "width": 920,
+          "height": 324,
+          "x_min": -2,
+          "x_max": 3,
+          "y_min": -3,
+          "y_max": 8,
+          "function": "linear",
+          "a": 2,
+          "c": -1,
+          "stroke": "orange",
+          "stroke_width": 5
+        },
+        {
+          "kind": "text",
+          "x": 790,
+          "y": 315,
+          "value": "y = 2x − 1",
+          "font_size": 34,
+          "weight": "bold",
+          "fill": "orange"
+        },
+        {
+          "kind": "text",
+          "x": 790,
+          "y": 355,
+          "value": "tangent at x = 1",
+          "font_size": 22,
+          "fill": "muted"
+        },
+        {
+          "kind": "text",
+          "x": 95,
+          "y": 687,
+          "value": "The derivative is not just a symbol. It is a local slope.",
+          "font_size": 22,
+          "fill": "muted"
+        }
+      ]
+    }
+  ]
+}
