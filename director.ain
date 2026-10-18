@@ -83,7 +83,7 @@ append_shape acc shape = put acc "svg" boxstr concat astext field acc "svg" shap
 scene_svg meta = astext field fold "append_shape" put put put record _ "svg" boxstr "" "local" field meta "local" "total" field field meta "scene" "frames" field field meta "scene" "elements" "svg"
 svg_at meta = j6 "<svg xmlns=\"http://www.w3.org/2000/svg\"" nat "width" iv meta "width" 1280 nat "height" iv meta "height" 720 ">" j3 "<defs><marker id=\"ain-arrow\" markerWidth=\"10\" markerHeight=\"10\" refX=\"9\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L0,6 L9,3 Z\" fill=\"#48dff0\"/></marker></defs>" j4 "<rect width=\"100%\" height=\"100%\" fill=\"" palette sv field meta "scene" "background" "ink" "\"/>" "" scene_svg meta "</svg>"
 write_frame meta = fswrite svgfile iv meta "index" 0 svg_at meta
-raster_frame meta = ok processrun environ "AINV_RSVG" a4 "--output" pngfile iv meta "index" 0 svgfile iv meta "index" 0 "--keep-aspect-ratio"
+raster_frame meta = print encode processrun environ "AINV_RSVG" a4 "--output" pngfile iv meta "index" 0 svgfile iv meta "index" 0 "--keep-aspect-ratio"
 ff_video_args fps = ap ap ap ap ap ap ap ap ap ap ap ap ap ap ap ap a1 "-y" "-hide_banner" "-loglevel" "error" "-framerate" str fps "-i" workpath "frame-%06d.png" "-c:v" "libx264" "-pix_fmt" "yuv420p" "-crf" "17" "-movflags" "+faststart" workpath "silent.mp4"
 seconds_ms ms = j3 str / ms 1000 "." pad3 % ms 1000
 audio_indexed state = get field state "timeline" iv state "i" 0
