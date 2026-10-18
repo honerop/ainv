@@ -22,7 +22,7 @@ jobs:
       - name: Build Ain application
         run: cargo run --quiet --manifest-path /tmp/ain/Cargo.toml -- build director.ain -o /tmp/ainv
       - name: Install external video and graphics codecs
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg librsvg2-bin fonts-dejavu-core
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg librsvg2-bin fonts-dejavu-core espeak-ng
       - name: Render a real 3-frame MP4 with Ain
         run: |
           set -euo pipefail
@@ -65,3 +65,16 @@ jobs:
           test -s voice-smoke.mp4
           test -s voice-smoke.srt
           ffprobe -v error -show_entries stream=codec_type -of csv=p=0 voice-smoke.mp4 | grep -qx audio
+      - name: Verify Ain offline speech fallback when Edge is blocked
+        run: |
+          set -euo pipefail
+          export AINV_WORK="$(mktemp -d)"
+          export AINV_RSVG="$(command -v rsvg-convert)"
+          export AINV_FFMPEG="$(command -v ffmpeg)"
+          export AINV_FFPROBE="$(command -v ffprobe)"
+          export AINV_EDGE_TTS=/bin/false
+          export AINV_ESPEAK="$(command -v espeak-ng)"
+          export AIN_PROCESS_TIMEOUT_MS=180000
+          /tmp/ainv examples/ain-voice-smoke.json fallback.mp4
+          test -s fallback.mp4
+          ffprobe -v error -show_entries stream=codec_type -of csv=p=0 fallback.mp4 | grep -qx audio

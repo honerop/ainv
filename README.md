@@ -19,8 +19,10 @@ showcase has four narrated math scenes at 1280×720, 30 FPS.
 nix run github:honerop/ainv -- ./lesson.json ./lesson.mp4
 ```
 
-Nix supplies the Ain compiler, a temporary work area, Edge TTS, librsvg,
-FFmpeg, and DejaVu fonts. No global Python/Rust installation is needed to
+Nix supplies the Ain compiler, a temporary work area, Edge TTS, espeak-ng,
+librsvg, FFmpeg, and DejaVu fonts. If Microsoft's Edge speech endpoint is
+unavailable, Ain falls back to offline espeak-ng narration. For silent renders,
+set `AINV_SKIP_TTS=1` before `nix run`. No global Python/Rust installation is needed to
 run an already built package.
 
 **Boundary:** the application source and scene renderer are in Ain.
