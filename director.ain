@@ -89,7 +89,10 @@ seconds_ms ms = j3 str / ms 1000 "." pad3 % ms 1000
 audio_indexed state = get field state "timeline" iv state "i" 0
 audio_next state = put state "i" boxint + iv state "i" 0 1
 voice_filter state scene = j6 "[" str iv state "input" 2 ":a]aresample=48000,adelay=" str / * iv scene "start_frame" 0 1000 iv state "fps" 30 concat ":all=1[v" str iv state "input" 2 "];"
-audio_add state scene = put put put put state "args" ap ap field state "args" "-i" voicefile iv scene "index" 0 "filters" concat sv state "filters" "" voice_filter state scene "refs" concat sv state "refs" "[sil]" j3 "[v" str iv state "input" 2 "]" "input" boxint + iv state "input" 2 1
+audio_with_args state scene = put state "args" ap ap field state "args" "-i" voicefile iv scene "index" 0
+audio_with_filter state scene = put state "filters" boxstr concat sv state "filters" "" voice_filter state scene
+audio_with_refs state = put state "refs" boxstr concat sv state "refs" "[sil]" j3 "[v" str iv state "input" 2 "]"
+audio_add state scene = put audio_with_refs audio_with_filter audio_with_args state scene scene "input" boxint + iv state "input" 2 1
 audio_step state = audio_next if == now_text audio_indexed state "" state audio_add state audio_indexed state
 filter_graph state = j4 sv state "filters" "" "[1:a]volume=0[sil];" sv state "refs" "[sil]" concat "amix=inputs=" concat str - iv state "input" 2 1 ":duration=first:dropout_transition=0,aresample=48000,alimiter=limit=0.95[aout]"
 sound_base duration = ap ap ap ap ap ap ap ap ap ap ap a1 "-y" "-hide_banner" "-loglevel" "error" "-i" workpath "silent.mp4" "-f" "lavfi" "-t" seconds_ms duration "-i" "anullsrc=r=48000:cl=stereo"
