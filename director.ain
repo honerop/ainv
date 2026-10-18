@@ -74,7 +74,7 @@ sin100 x = if <= phase x 314 sinpos phase x neg sinpos - phase x 314
 plotx s i = + * 100 iv s "x_min" -5 / * * 100 - iv s "x_max" 5 iv s "x_min" -5 i 180
 plot_y s x = if == sv s "function" "quadratic" "sin" + * iv s "a" 1 sin100 + x * 100 iv s "b" 0 * 100 iv s "c" 0 if == sv s "function" "quadratic" "cos" + * iv s "a" 1 sin100 + x + 157 * 100 iv s "b" 0 * 100 iv s "c" 0 if == sv s "function" "quadratic" "linear" + * iv s "a" 1 x * 100 iv s "c" 0 if == sv s "function" "quadratic" "cubic" + / * iv s "a" 1 * / * x x 100 x 100 + * iv s "b" 0 x * 100 iv s "c" 0 + + / * iv s "a" 1 * x x 100 * iv s "b" 0 x * 100 iv s "c" 0
 plot_points s i last text = if > i last text plot_points s + i 1 last j5 text str cx s plotx s i "," str cy s plot_y s plotx s i " "
-plot_shape s frame total = concat j4 "<polyline fill=\"none\" points=\"" plot_points s 0 / * 180 localpct s pct frame total 100 "" "\" stroke-linecap=\"round\" stroke-linejoin=\"round\"" j3 stroke s alpha s frame total "/>"
+plot_shape s frame total = j4 "<polyline fill=\"none\" points=\"" plot_points s 0 / * 180 localpct s pct frame total 100 "" "\" stroke-linecap=\"round\" stroke-linejoin=\"round\"" j3 stroke s alpha s frame total "/>"
 point p = j3 str iv p "x" 0 "," str iv p "y" 0
 poly_points ps i result = if >= i size ps result poly_points ps + i 1 j3 result point get ps i " "
 poly_shape s = j4 "<polyline fill=\"none\" points=\"" poly_points field s "points" 0 "" concat "\"" stroke s "/>"
