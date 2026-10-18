@@ -1,0 +1,38 @@
+name: Ain-native video director
+
+on:
+  push:
+    paths:
+      - director.ain
+      - examples/ain-smoke.json
+      - .github/workflows/ain-director.yml
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  ain-video:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Fetch Ain compiler
+        run: git clone --depth 1 https://github.com/honerop/ain.git /tmp/ain
+      - name: Check that director is valid Ain
+        run: cargo run --quiet --manifest-path /tmp/ain/Cargo.toml -- check director.ain
+      - name: Build Ain application
+        run: cargo run --quiet --manifest-path /tmp/ain/Cargo.toml -- build director.ain -o /tmp/ainv
+      - name: Install external video and graphics codecs
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg librsvg2-bin fonts-dejavu-core
+      - name: Render a real 3-frame MP4 with Ain
+        run: |
+          set -euo pipefail
+          export AINV_WORK="$(mktemp -d)"
+          export AINV_RSVG="$(command -v rsvg-convert)"
+          export AINV_FFMPEG="$(command -v ffmpeg)"
+          export AINV_FFPROBE="$(command -v ffprobe)"
+          export AINV_EDGE_TTS=/bin/false
+          export AIN_PROCESS_TIMEOUT_MS=180000
+          /tmp/ainv examples/ain-smoke.json smoke-ain.mp4
+          test -s smoke-ain.mp4
+          ffprobe -v error -show_entries stream=codec_name,width,height -of json smoke-ain.mp4
+          test -s smoke-ain.srt
