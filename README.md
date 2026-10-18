@@ -100,8 +100,8 @@ ainc build director.ain -o ainv
 ```
 
 The older `preview.ain` and `render.ain` Ain-only experiments remain
-available separately. Earlier `native/` and `pipeline.py` implementation
-files are historical and no longer on the default execution path.
+available separately. The earlier app-specific Python and Rust backends were
+removed from the repository; version control retains their history.
 
 ### Limitations
 
