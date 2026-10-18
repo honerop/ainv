@@ -1,0 +1,24 @@
+name: Ain Nix native build
+
+on:
+  pull_request:
+  push:
+    paths:
+      - flake.nix
+      - flake.lock
+      - director.ain
+      - .github/workflows/ain-nix.yml
+  workflow_dispatch:
+
+jobs:
+  nix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v17
+      - name: Resolve Ain compiler input
+        run: |
+          nix flake lock
+          cat flake.lock
+      - name: Compile Ain and render offline smoke MP4
+        run: nix flake check -L
