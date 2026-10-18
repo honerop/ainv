@@ -25,7 +25,7 @@ fn escape_xml(input: &str) -> String {
 }
 
 fn animate(element: &Value, key: &str, progress: f64) -> f64 {
-    let base = number(element, key, 0.0);
+    let base = number(element, key, if key == "opacity" { 100.0 } else { 0.0 });
     let start = element.get("from").map_or(base, |v| number(v, key, base));
     let end = element.get("to").map_or(base, |v| number(v, key, base));
     let p = if text(element, "ease", "linear") == "smooth" {
