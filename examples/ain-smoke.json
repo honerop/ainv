@@ -1,0 +1,47 @@
+{
+  "width": 160,
+  "height": 96,
+  "fps": 2,
+  "scenes": [
+    {
+      "frames": 3,
+      "background": "ink",
+      "elements": [
+        {
+          "kind": "text",
+          "x": 5,
+          "y": 25,
+          "value": "Ain math",
+          "font_size": 20,
+          "fill": "white"
+        },
+        {
+          "kind": "axes",
+          "x": 20,
+          "y": 30,
+          "width": 120,
+          "height": 50,
+          "x_min": -3,
+          "x_max": 3,
+          "y_min": -1,
+          "y_max": 6,
+          "stroke": "slate"
+        },
+        {
+          "kind": "plot",
+          "x": 20,
+          "y": 30,
+          "width": 120,
+          "height": 50,
+          "x_min": -3,
+          "x_max": 3,
+          "y_min": -1,
+          "y_max": 6,
+          "function": "quadratic",
+          "stroke": "cyan",
+          "stroke_width": 2
+        }
+      ]
+    }
+  ]
+}
