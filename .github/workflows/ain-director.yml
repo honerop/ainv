@@ -114,8 +114,8 @@ jobs:
           export AINV_ESPEAK="$(command -v espeak-ng)"
           export AINV_SKIP_TTS=1
           export AIN_PROCESS_TIMEOUT_MS=180000
-          jq '.width=160 | .height=96 | .fps=1 | .scenes |= map(.frames=1 | del(.narration))' examples/general-showcase.json > examples/general-short-regression.json
-          jq '.width=160 | .height=96 | .fps=1 | .scenes |= map(.frames=1 | del(.narration))' examples/math-explainer.json > examples/math-short-regression.json
+          jq '.width=160 | .height=96 | .fps=5 | .scenes |= map(.frames=15 | del(.narration))' examples/general-showcase.json > examples/general-short-regression.json
+          jq '.width=160 | .height=96 | .fps=5 | .scenes |= map(.frames=15 | del(.narration))' examples/math-explainer.json > examples/math-short-regression.json
           /tmp/ainv examples/general-short-regression.json general-short.mp4
           test -s general-short.mp4
           rm -rf "$AINV_WORK"
