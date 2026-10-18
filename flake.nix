@@ -1,5 +1,5 @@
 {
-  description = "AinV: JSON motion graphics rendered as real H.264 MP4 video";
+  description = "AinV: narrated mathematical animations with Nix-native MP4 export";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
@@ -30,19 +30,16 @@
         let
           pkgs = pkgsFor system;
           native = nativeFor system;
+          python = pkgs.python3.withPackages (ps: [ ps.edge-tts ]);
         in pkgs.writeShellScriptBin "ainv" ''
           set -euo pipefail
           export AINV_FONT_DIR="${pkgs.dejavu_fonts}/share/fonts/truetype"
-          if [ "$#" -eq 0 ]; then
-            exec "${native}/bin/ainv-native" "${./examples/showcase.json}" "showcase.mp4"
-          elif [ "$#" -eq 1 ]; then
-            exec "${native}/bin/ainv-native" "$1" "output.mp4"
-          elif [ "$#" -eq 2 ]; then
-            exec "${native}/bin/ainv-native" "$1" "$2"
-          else
-            echo "Usage: nix run github:honerop/ainv [-- INPUT.json [OUTPUT.mp4]]" >&2
-            exit 2
-          fi
+          export AINV_NATIVE="${native}/bin/ainv-native"
+          export AINV_DEFAULT_SPEC="${./examples/math-explainer.json}"
+          export AINV_EDGE_TTS="${python}/bin/edge-tts"
+          export AINV_FFMPEG="${pkgs.ffmpeg}/bin/ffmpeg"
+          export AINV_FFPROBE="${pkgs.ffmpeg}/bin/ffprobe"
+          exec "${python}/bin/python3" "${./pipeline.py}" "$@"
         '';
     in {
       packages = eachSystem (system: {
