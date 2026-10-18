@@ -24,4 +24,4 @@ jobs:
           nix run . -- examples/ain-smoke.json smoke.mp4
           test -s smoke.mp4
           test -s smoke.srt
-          ffprobe -v error -show_entries stream=codec_name -of csv=p=0 smoke.mp4 | grep -q h264
+          nix develop -c ffprobe -v error -show_entries stream=codec_name -of csv=p=0 smoke.mp4 | grep -q h264
