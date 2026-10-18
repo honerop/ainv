@@ -36,14 +36,126 @@ fn animate(element: &Value, key: &str, progress: f64) -> f64 {
     start + (end - start) * p
 }
 
+
+fn graph_bounds(element: &Value, progress: f64) -> (f64, f64, f64, f64, f64, f64, f64, f64) {
+    (
+        animate(element, "x", progress),
+        animate(element, "y", progress),
+        animate(element, "width", progress).max(1.0),
+        animate(element, "height", progress).max(1.0),
+        number(element, "x_min", -5.0),
+        number(element, "x_max", 5.0),
+        number(element, "y_min", -3.0),
+        number(element, "y_max", 3.0),
+    )
+}
+
+fn graph_coords(bounds: (f64, f64, f64, f64, f64, f64, f64, f64), x: f64, y: f64) -> (f64, f64) {
+    let (left, top, width, height, xmin, xmax, ymin, ymax) = bounds;
+    (
+        left + ((x - xmin) / (xmax - xmin)) * width,
+        top + height - ((y - ymin) / (ymax - ymin)) * height,
+    )
+}
+
+fn axes(element: &Value, progress: f64) -> String {
+    let bounds = graph_bounds(element, progress);
+    let (left, top, width, height, xmin, xmax, ymin, ymax) = bounds;
+    if xmax <= xmin || ymax <= ymin { return String::new(); }
+    let stroke = color(text(element, "stroke", "muted"));
+    let mut out = String::from("<g>");
+    // Subtle integer grid lines; every label belongs to the coordinate system.
+    if xmax - xmin <= 40.0 {
+        for i in (xmin.ceil() as i32)..=(xmax.floor() as i32) {
+            let (px, _) = graph_coords(bounds, i as f64, 0.0);
+            out.push_str(&format!(
+                r#"<line x1="{px}" y1="{top}" x2="{px}" y2="{}" stroke="{stroke}" stroke-opacity=".23" stroke-width="1"/>"#,
+                top + height
+            ));
+        }
+    }
+    if ymax - ymin <= 40.0 {
+        for i in (ymin.ceil() as i32)..=(ymax.floor() as i32) {
+            let (_, py) = graph_coords(bounds, 0.0, i as f64);
+            out.push_str(&format!(
+                r#"<line x1="{left}" y1="{py}" x2="{}" y2="{py}" stroke="{stroke}" stroke-opacity=".23" stroke-width="1"/>"#,
+                left + width
+            ));
+        }
+    }
+    if xmin <= 0.0 && xmax >= 0.0 {
+        let (px, _) = graph_coords(bounds, 0.0, 0.0);
+        out.push_str(&format!(
+            r#"<line x1="{px}" y1="{top}" x2="{px}" y2="{}" stroke="{stroke}" stroke-width="2.5"/>"#,
+            top + height
+        ));
+    }
+    if ymin <= 0.0 && ymax >= 0.0 {
+        let (_, py) = graph_coords(bounds, 0.0, 0.0);
+        out.push_str(&format!(
+            r#"<line x1="{left}" y1="{py}" x2="{}" y2="{py}" stroke="{stroke}" stroke-width="2.5"/>"#,
+            left + width
+        ));
+    }
+    out.push_str("</g>");
+    out
+}
+
+fn evaluate_curve(element: &Value, x: f64) -> f64 {
+    let a = number(element, "a", 1.0);
+    let b = number(element, "b", 0.0);
+    let c = number(element, "c", 0.0);
+    match text(element, "function", "sin") {
+        "sin" => a * (x + b).sin() + c,
+        "cos" => a * (x + b).cos() + c,
+        "quadratic" | "parabola" => a * x * x + b * x + c,
+        "cubic" => a * x * x * x + b * x + c,
+        "linear" => a * x + c,
+        "exp" => a * (x + b).exp() + c,
+        "gaussian" => a * (-(x - b).powi(2)).exp() + c,
+        _ => f64::NAN,
+    }
+}
+
+fn plot(element: &Value, progress: f64) -> String {
+    let bounds = graph_bounds(element, progress);
+    let (_, _, _, _, xmin, xmax, ymin, ymax) = bounds;
+    if xmax <= xmin || ymax <= ymin { return String::new(); }
+    let stroke = color(text(element, "stroke", "cyan"));
+    let sw = number(element, "stroke_width", 5.0).clamp(0.1, 100.0);
+    let opacity = (animate(element, "opacity", progress) / 100.0).clamp(0.0, 1.0);
+    let draw_progress = if element.get("draw").and_then(Value::as_bool) == Some(false) {
+        1.0
+    } else { progress };
+    let count = (400.0 * draw_progress).ceil() as usize;
+    let mut path = String::new();
+    let mut pen_down = false;
+    for index in 0..=count {
+        let x = xmin + (xmax - xmin) * (index as f64 / 400.0);
+        let y = evaluate_curve(element, x);
+        if !y.is_finite() || !(ymin..=ymax).contains(&y) {
+            pen_down = false;
+            continue;
+        }
+        let (px, py) = graph_coords(bounds, x, y);
+        path.push_str(&format!("{} {:.3} {:.3} ", if pen_down { "L" } else { "M" }, px, py));
+        pen_down = true;
+    }
+    format!(
+        r#"<path d="{path}" fill="none" stroke="{stroke}" stroke-width="{sw}" opacity="{opacity}" stroke-linecap="round" stroke-linejoin="round"/>"#
+    )
+}
+
 fn shape(element: &Value, progress: f64) -> String {
     let val = |key: &str| animate(element, key, progress);
     let fill = color(text(element, "fill", "cyan"));
     let stroke = color(text(element, "stroke", "cyan"));
-    let opacity = (number(element, "opacity", 100.0) / 100.0).clamp(0.0, 1.0);
+    let opacity = (animate(element, "opacity", progress) / 100.0).clamp(0.0, 1.0);
     let sw = number(element, "stroke_width", 3.0).max(0.0);
     let common = format!(r#"opacity="{opacity:.3}""#);
     match text(element, "kind", "") {
+        "axes" => axes(element, progress),
+        "plot" => plot(element, progress),
         "rect" => format!(
             r#"<rect x="{}" y="{}" width="{}" height="{}" rx="{}" fill="{fill}" {common}/>"#,
             val("x"), val("y"), val("width").max(0.0), val("height").max(0.0),
@@ -163,6 +275,31 @@ impl<'a> Timeline<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn plot_draws_more_segments_over_time() {
+        let graph: Value = serde_json::json!({
+            "kind": "plot", "x": 0, "y": 0, "width": 100, "height": 60,
+            "x_min": -2, "x_max": 2, "y_min": -1, "y_max": 4,
+            "function": "quadratic"
+        });
+        let first = plot(&graph, 0.0);
+        let last = plot(&graph, 1.0);
+        assert!(last.len() > first.len());
+        assert!(last.contains("<path"));
+    }
+
+    #[test]
+    fn axes_render_in_math_coordinates() {
+        let axes_json = serde_json::json!({
+            "kind": "axes", "x": 100, "y": 100,
+            "width": 400, "height": 200,
+            "x_min": -2, "x_max": 2, "y_min": -1, "y_max": 1
+        });
+        let svg = axes(&axes_json, 1.0);
+        assert!(svg.contains("<line"));
+        assert!(svg.contains("x1=\"300"));
+    }
+
     #[test]
     fn timeline_renders_animation_at_different_times() {
         let json: Value = serde_json::from_str(r#"{"width":128,"height":128,"fps":8,"scenes":[{"frames":3,"elements":[{"kind":"rect","x":10,"y":10,"width":30,"height":20,"from":{"x":0}}]}]}"#).unwrap();
