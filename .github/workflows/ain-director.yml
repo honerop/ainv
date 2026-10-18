@@ -36,3 +36,32 @@ jobs:
           test -s smoke-ain.mp4
           ffprobe -v error -show_entries stream=codec_name,width,height -of json smoke-ain.mp4
           test -s smoke-ain.srt
+      - name: Verify Edge TTS integration and AAC audio alignment without network
+        run: |
+          set -euo pipefail
+          cat > /tmp/mock-edge-tts <<'EOF'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          output=""
+          while [ "$#" -gt 0 ]; do
+            if [ "$1" = "--write-media" ]; then
+              output="$2"
+              shift 2
+            else
+              shift
+            fi
+          done
+          test -n "$output"
+          ffmpeg -hide_banner -loglevel error -y -f lavfi -i "sine=frequency=440:duration=1.2" "$output"
+          EOF
+          chmod +x /tmp/mock-edge-tts
+          export AINV_WORK="$(mktemp -d)"
+          export AINV_RSVG="$(command -v rsvg-convert)"
+          export AINV_FFMPEG="$(command -v ffmpeg)"
+          export AINV_FFPROBE="$(command -v ffprobe)"
+          export AINV_EDGE_TTS=/tmp/mock-edge-tts
+          export AIN_PROCESS_TIMEOUT_MS=180000
+          /tmp/ainv examples/ain-voice-smoke.json voice-smoke.mp4
+          test -s voice-smoke.mp4
+          test -s voice-smoke.srt
+          ffprobe -v error -show_entries stream=codec_type -of csv=p=0 voice-smoke.mp4 | grep -qx audio

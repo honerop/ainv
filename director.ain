@@ -74,7 +74,7 @@ sin100 x = if <= phase x 314 sinpos phase x neg sinpos - phase x 314
 plotx s i = + * 100 iv s "x_min" -5 / * * 100 - iv s "x_max" 5 iv s "x_min" -5 i 180
 plot_y s x = if == sv s "function" "quadratic" "sin" + * iv s "a" 1 sin100 + x * 100 iv s "b" 0 * 100 iv s "c" 0 if == sv s "function" "quadratic" "cos" + * iv s "a" 1 sin100 + x + 157 * 100 iv s "b" 0 * 100 iv s "c" 0 if == sv s "function" "quadratic" "linear" + * iv s "a" 1 x * 100 iv s "c" 0 if == sv s "function" "quadratic" "cubic" + / * iv s "a" 1 * / * x x 100 x 100 + * iv s "b" 0 x * 100 iv s "c" 0 + + / * iv s "a" 1 * x x 100 * iv s "b" 0 x * 100 iv s "c" 0
 plot_points s i last text = if > i last text plot_points s + i 1 last j5 text str cx s plotx s i "," str cy s plot_y s plotx s i " "
-plot_shape s frame total = j4 "<polyline fill=\"none\" points=\"" plot_points s 0 / * 180 localpct s pct frame total 100 "" "\" stroke-linecap=\"round\" stroke-linejoin=\"round\"" j3 stroke s alpha s frame total "/>"
+plot_shape s frame total = j4 "<polyline fill=\"none\" points=\"" plot_points s 0 / * 180 localpct s pct frame total 100 "" "\"" j3 stroke s alpha s frame total "/>"
 point p = j3 str iv p "x" 0 "," str iv p "y" 0
 poly_points ps i result = if >= i size ps result poly_points ps + i 1 j3 result point get ps i " "
 poly_shape s = j4 "<polyline fill=\"none\" points=\"" poly_points field s "points" 0 "" concat "\"" stroke s "/>"
@@ -89,7 +89,10 @@ seconds_ms ms = j3 str / ms 1000 "." pad3 % ms 1000
 audio_indexed state = get field state "timeline" iv state "i" 0
 audio_next state = put state "i" boxint + iv state "i" 0 1
 voice_filter state scene = j6 "[" str iv state "input" 2 ":a]aresample=48000,adelay=" str / * iv scene "start_frame" 0 1000 iv state "fps" 30 concat ":all=1[v" str iv state "input" 2 "];"
-audio_add state scene = put put put put state "args" ap ap field state "args" "-i" voicefile iv scene "index" 0 "filters" concat sv state "filters" "" voice_filter state scene "refs" concat sv state "refs" "[sil]" j3 "[v" str iv state "input" 2 "]" "input" boxint + iv state "input" 2 1
+audio_with_args state scene = put state "args" ap ap field state "args" "-i" voicefile iv scene "index" 0
+audio_with_filter state scene = put state "filters" boxstr concat sv state "filters" "" voice_filter state scene
+audio_with_refs state = put state "refs" boxstr concat sv state "refs" "[sil]" j3 "[v" str iv state "input" 2 "]"
+audio_add state scene = put audio_with_refs audio_with_filter audio_with_args state scene scene "input" boxint + iv state "input" 2 1
 audio_step state = audio_next if == now_text audio_indexed state "" state audio_add state audio_indexed state
 filter_graph state = j4 sv state "filters" "" "[1:a]volume=0[sil];" sv state "refs" "[sil]" concat "amix=inputs=" concat str - iv state "input" 2 1 ":duration=first:dropout_transition=0,aresample=48000,alimiter=limit=0.95[aout]"
 sound_base duration = ap ap ap ap ap ap ap ap ap ap ap a1 "-y" "-hide_banner" "-loglevel" "error" "-i" workpath "silent.mp4" "-f" "lavfi" "-t" seconds_ms duration "-i" "anullsrc=r=48000:cl=stereo"
@@ -98,7 +101,7 @@ sound_args state duration output = sound_tail field state "args" state duration 
 copy_args out = a6 "-y" "-i" workpath "silent.mp4" "-c" "copy" out
 srt_time ms = j6 pad2 / ms 3600000 ":" pad2 % / ms 60000 60 ":" pad2 % / ms 1000 60 concat "," pad3 % ms 1000
 caption_text scene = sv scene "caption" now_text scene
-sub_step state = put put state "text" concat sv state "text" "" j6 str + iv state "i" 0 1 "\n" srt_time / * iv audio_indexed state "start_frame" 0 1000 iv state "fps" 30 " --> " srt_time / * + iv audio_indexed state "start_frame" 0 iv audio_indexed state "frames" 1 1000 iv state "fps" 30 concat "\n" concat caption_text audio_indexed state "\n\n" "i" boxint + iv state "i" 0 1
+sub_step state = put put state "text" boxstr concat sv state "text" "" j6 str + iv state "i" 0 1 "\n" srt_time / * iv audio_indexed state "start_frame" 0 1000 iv state "fps" 30 " --> " srt_time / * + iv audio_indexed state "start_frame" 0 iv audio_indexed state "frames" 1 1000 iv state "fps" 30 concat "\n" concat caption_text audio_indexed state "\n\n" "i" boxint + iv state "i" 0 1
 
 args = argv _
 input_file = if > size args 0 astext get args 0 environ "AINV_DEFAULT_SPEC"

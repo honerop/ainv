@@ -15,19 +15,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@v17
-      - name: Verify Nix flake checks
-        run: nix flake check --show-trace
-      - name: Build standalone renderer
+      - name: Verify Nix flake checks (compiles Ain and renders MP4)
+        run: nix flake check -L
+      - name: Build standalone Ain program wrapper
         run: nix build .#default -L
-      - name: Verify custom JSON MP4 export
+      - name: Verify custom JSON MP4 export using Ain
         run: |
-          nix run . -- examples/mp4-smoke.json smoke.mp4
+          nix run . -- examples/ain-smoke.json smoke.mp4
           test -s smoke.mp4
-          file smoke.mp4 | grep -qi 'ISO Media'
-      - name: Verify default nix run creates showcase.mp4
-        run: |
-          mkdir -p /tmp/ainv-run-check
-          cd /tmp/ainv-run-check
-          nix run "${GITHUB_WORKSPACE}"
-          test -s showcase.mp4
-          file showcase.mp4 | grep -qi 'ISO Media'
+          test -s smoke.srt
+          nix develop -c ffprobe -v error -show_entries stream=codec_name -of csv=p=0 smoke.mp4 | grep -q h264

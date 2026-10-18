@@ -1,0 +1,22 @@
+{
+  "width": 160,
+  "height": 96,
+  "fps": 2,
+  "scenes": [
+    {
+      "frames": 3,
+      "narration": "The square of x makes a curve.",
+      "background": "ink",
+      "elements": [
+        {
+          "kind": "text",
+          "x": 10,
+          "y": 40,
+          "font_size": 17,
+          "value": "y = x²",
+          "fill": "white"
+        }
+      ]
+    }
+  ]
+}
