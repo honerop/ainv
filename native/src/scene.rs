@@ -146,6 +146,15 @@ fn plot(element: &Value, progress: f64) -> String {
     )
 }
 
+fn local_progress(element: &Value, scene_progress: f64) -> f64 {
+    let start = number(element, "start", 0.0).clamp(0.0, 1.0);
+    let end = number(element, "end", 1.0).clamp(0.0, 1.0);
+    if end <= start {
+        return if scene_progress >= end { 1.0 } else { 0.0 };
+    }
+    ((scene_progress - start) / (end - start)).clamp(0.0, 1.0)
+}
+
 fn shape(element: &Value, progress: f64) -> String {
     let val = |key: &str| animate(element, key, progress);
     let fill = color(text(element, "fill", "cyan"));
@@ -262,7 +271,7 @@ impl<'a> Timeline<'a> {
         );
         if let Some(elements) = scene.get("elements").and_then(Value::as_array) {
             for element in elements {
-                svg.push_str(&shape(element, progress));
+                svg.push_str(&shape(element, local_progress(element, progress)));
             }
         }
         svg.push_str("</svg>");
@@ -275,6 +284,14 @@ impl<'a> Timeline<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn scene_time_ranges_stage_animations() {
+        let element = serde_json::json!({"start": 0.25, "end": 0.75});
+        assert_eq!(local_progress(&element, 0.0), 0.0);
+        assert_eq!(local_progress(&element, 0.5), 0.5);
+        assert_eq!(local_progress(&element, 1.0), 1.0);
+    }
+
     #[test]
     fn plot_draws_more_segments_over_time() {
         let graph: Value = serde_json::json!({
