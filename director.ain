@@ -74,7 +74,7 @@ sin100 x = if <= phase x 314 sinpos phase x neg sinpos - phase x 314
 plotx s i = + * 100 iv s "x_min" -5 / * * 100 - iv s "x_max" 5 iv s "x_min" -5 i 180
 plot_y s x = if == sv s "function" "quadratic" "sin" + * iv s "a" 1 sin100 + x * 100 iv s "b" 0 * 100 iv s "c" 0 if == sv s "function" "quadratic" "cos" + * iv s "a" 1 sin100 + x + 157 * 100 iv s "b" 0 * 100 iv s "c" 0 if == sv s "function" "quadratic" "linear" + * iv s "a" 1 x * 100 iv s "c" 0 if == sv s "function" "quadratic" "cubic" + / * iv s "a" 1 * / * x x 100 x 100 + * iv s "b" 0 x * 100 iv s "c" 0 + + / * iv s "a" 1 * x x 100 * iv s "b" 0 x * 100 iv s "c" 0
 plot_points s i last text = if > i last text plot_points s + i 1 last j5 text str cx s plotx s i "," str cy s plot_y s plotx s i " "
-plot_shape s frame total = j4 "<polyline fill=\"none\" points=\"" plot_points s 0 / * 180 localpct s pct frame total 100 "" "\" stroke-linecap=\"round\" stroke-linejoin=\"round\"" j3 stroke s alpha s frame total "/>"
+plot_shape s frame total = j4 "<polyline fill=\"none\" points=\"" plot_points s 0 / * 180 localpct s pct frame total 100 "" "\"" j3 stroke s alpha s frame total "/>"
 point p = j3 str iv p "x" 0 "," str iv p "y" 0
 poly_points ps i result = if >= i size ps result poly_points ps + i 1 j3 result point get ps i " "
 poly_shape s = j4 "<polyline fill=\"none\" points=\"" poly_points field s "points" 0 "" concat "\"" stroke s "/>"
@@ -83,7 +83,7 @@ append_shape acc shape = put acc "svg" boxstr concat astext field acc "svg" shap
 scene_svg meta = astext field fold "append_shape" put put put record _ "svg" boxstr "" "local" field meta "local" "total" field field meta "scene" "frames" field field meta "scene" "elements" "svg"
 svg_at meta = j6 "<svg xmlns=\"http://www.w3.org/2000/svg\"" nat "width" iv meta "width" 1280 nat "height" iv meta "height" 720 ">" j3 "<defs><marker id=\"ain-arrow\" markerWidth=\"10\" markerHeight=\"10\" refX=\"9\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L0,6 L9,3 Z\" fill=\"#48dff0\"/></marker></defs>" j4 "<rect width=\"100%\" height=\"100%\" fill=\"" palette sv field meta "scene" "background" "ink" "\"/>" "" scene_svg meta "</svg>"
 write_frame meta = fswrite svgfile iv meta "index" 0 svg_at meta
-raster_frame meta = print encode processrun environ "AINV_RSVG" a4 "--output" pngfile iv meta "index" 0 svgfile iv meta "index" 0 "--keep-aspect-ratio"
+raster_frame meta = ok processrun environ "AINV_RSVG" a4 "--output" pngfile iv meta "index" 0 svgfile iv meta "index" 0 "--keep-aspect-ratio"
 ff_video_args fps = ap ap ap ap ap ap ap ap ap ap ap ap ap ap ap ap a1 "-y" "-hide_banner" "-loglevel" "error" "-framerate" str fps "-i" workpath "frame-%06d.png" "-c:v" "libx264" "-pix_fmt" "yuv420p" "-crf" "17" "-movflags" "+faststart" workpath "silent.mp4"
 seconds_ms ms = j3 str / ms 1000 "." pad3 % ms 1000
 audio_indexed state = get field state "timeline" iv state "i" 0
