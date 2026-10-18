@@ -31,11 +31,14 @@ pngfile i = workpath framename i ".png"
 voicefile i = workpath concat concat "voice-" pad6 i ".mp3"
 now_text a = if hasfield a "narration" sv a "narration" "" ""
 ttsargs a = a7 "--voice" sv a "voice" "en-US-AndrewNeural" concat "--rate=" sv a "voice_rate" "-5%" "--text" now_text a "--write-media" voicefile iv a "index" 0
-synth a = if == now_text a "" _ ok processrun environ "AINV_EDGE_TTS" ttsargs a
+voice_success result = and asbool field result "ok" == asint field field result "value" "code" 0
+fallback_args a = a7 "-v" "en-us" "-s" "155" "-w" voicefile iv a "index" 0 now_text a
+synth_fallback a result = if voice_success result _ ok processrun environ "AINV_ESPEAK" fallback_args a
+synth a = if or == now_text a "" == environ "AINV_SKIP_TTS" "1" _ synth_fallback a processrun environ "AINV_EDGE_TTS" ttsargs a
 ffprobe_args filename = a7 "-v" "error" "-show_entries" "format=duration" "-of" "default=noprint_wrappers=1:nokey=1" filename
 msec text = + * 1000 num before trim text "." num strjoin listtake split concat after trim text "." "000" "" 3 ""
 probelen filename = msec astext field field processrun environ "AINV_FFPROBE" ffprobe_args filename "value" "stdout"
-audioms scene = if == now_text scene "" 0 probelen voicefile iv scene "index" 0
+audioms scene = if or == now_text scene "" == environ "AINV_SKIP_TTS" "1" 0 probelen voicefile iv scene "index" 0
 index_scene s = put get field s "scenes" iv s "i" 0 "index" boxint iv s "i" 0
 index_advance s scene = put put s "indexed" push field s "indexed" scene "i" boxint + iv s "i" 0 1
 index_step s = index_advance s index_scene s
@@ -93,7 +96,7 @@ audio_with_args state scene = put state "args" ap ap field state "args" "-i" voi
 audio_with_filter state scene = put state "filters" boxstr concat sv state "filters" "" voice_filter state scene
 audio_with_refs state = put state "refs" boxstr concat sv state "refs" "[sil]" j3 "[v" str iv state "input" 2 "]"
 audio_add state scene = put audio_with_refs audio_with_filter audio_with_args state scene scene "input" boxint + iv state "input" 2 1
-audio_step state = audio_next if == now_text audio_indexed state "" state audio_add state audio_indexed state
+audio_step state = audio_next if or == now_text audio_indexed state "" == environ "AINV_SKIP_TTS" "1" state audio_add state audio_indexed state
 filter_graph state = j4 sv state "filters" "" "[1:a]volume=0[sil];" sv state "refs" "[sil]" concat "amix=inputs=" concat str - iv state "input" 2 1 ":duration=first:dropout_transition=0,aresample=48000,alimiter=limit=0.95[aout]"
 sound_base duration = ap ap ap ap ap ap ap ap ap ap ap a1 "-y" "-hide_banner" "-loglevel" "error" "-i" workpath "silent.mp4" "-f" "lavfi" "-t" seconds_ms duration "-i" "anullsrc=r=48000:cl=stereo"
 sound_tail args state duration output = ap ap ap ap ap ap ap ap ap ap ap ap ap ap ap args "-filter_complex" filter_graph state "-map" "0:v:0" "-map" "[aout]" "-c:v" "copy" "-c:a" "aac" "-b:a" "192k" "-t" seconds_ms duration output
