@@ -12,6 +12,7 @@ import math
 import os
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -97,7 +98,7 @@ def prepare_timeline(project: dict, input_path: Path, workspace: Path,
             if not isinstance(chosen_voice, str) or not isinstance(chosen_rate, str):
                 raise ValueError("voice and voice_rate must be strings")
             print(f"ainv: synthesizing scene {index + 1}: {chosen_voice}", flush=True)
-            run([edge_tts, "--voice", chosen_voice, "--rate", chosen_rate,
+            run([edge_tts, "--voice", chosen_voice, f"--rate={chosen_rate}",
                  "--text", narration, "--write-media", str(clip)])
             length = probe_duration(clip, ffprobe)
 
@@ -225,7 +226,7 @@ def main() -> int:
             if clips or music is not None:
                 mux_audio(rendered, output, clips, music, sub, duration, ffmpeg)
             else:
-                rendered.replace(output)
+                shutil.copy2(rendered, output)
             if sub is not None:
                 subtitle_output.write_text(sub.read_text(encoding="utf-8"), encoding="utf-8")
     except (ValueError, FileNotFoundError, subprocess.CalledProcessError, OSError) as error:
