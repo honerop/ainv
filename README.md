@@ -1,246 +1,109 @@
-# ainv
+# AinV
 
-JSON-driven video generation written entirely in [Ain](https://github.com/honerop/ain).
+**AinV creates narrated, vector-based mathematical animations from JSON on NixOS.**
+The default example explains curves, transformations, and tangents using animated
+coordinate systems. Its aim is the *explanatory* approach of 3Blue1Brown, not a
+claim to reproduce Grant Sanderson's production quality automatically.
 
-`ainv` parses animated scenes, renders frames on the CPU, and writes an actual
-**YUV4MPEG2 (Y4M)** video file using existing Ain builtins. It does not run
-Python, FFmpeg, MoviePy, Manim, a browser, or an external encoder. It does not
-require changes to the Ain compiler or its standard library.
+## One-command start
 
-## Run with NixOS (one command)
-
-From **any directory** on NixOS with flakes enabled:
+With Nix flakes enabled, from any directory:
 
 ```sh
 nix run github:honerop/ainv
 ```
 
-This generates **`./showcase.mp4`**: a real full-color H.264 MP4 video,
-1280×720, 30 FPS, 13 seconds long. Nothing needs to be cloned or installed
-globally. On the first run Nix builds the standalone renderer and its bundled
-dependencies; Nix caches the output for subsequent runs. The video is silent
-(no audio track), and the default showcase is the educational motion-graphics
-sample from `examples/showcase.json`.
+This builds the renderer using Nix, synthesizes the demo narration using
+Edge TTS, renders 1280 × 720 H.264 video, and creates **`showcase.mp4`** and
+**`showcase.srt`** in your current directory. There is no global install.
+**Edge TTS requires internet access at render time** and depends on
+Microsoft's service being available. All software dependencies come from Nix.
 
-To render your own AinV JSON file (the paths are relative to your current
-directory):
+To use your own project:
 
 ```sh
-nix run github:honerop/ainv -- ./my-video.json ./my-video.mp4
+nix run github:honerop/ainv -- ./lesson.json ./lesson.mp4
 ```
 
-Supplying only the JSON path writes `output.mp4`:
+Render without contacting Edge TTS:
 
 ```sh
-nix run github:honerop/ainv -- ./my-video.json
+nix run github:honerop/ainv -- ./lesson.json ./lesson.mp4 --no-tts
 ```
 
-The flake includes the native H.264 encoder, MP4 muxer, SVG rasterizer,
-DejaVu fonts, and a pinned Rust dependency lockfile. It does not require a
-manual `rustc`, `cargo`, `nasm`, `ffmpeg`, or `python` invocation.
-If flakes are not enabled in your Nix installation, add
-`--extra-experimental-features 'nix-command flakes'` immediately after
-`nix`.
-
-## Real MP4 export (full-color, H.264)
-
-The new `native/` backend exports the **same JSON scene timeline** to a real
-H.264/AVC `.mp4`, frame by frame. It renders text, rounded shapes, curves,
-arrows, colors, keyframes, easing, and scene changes at the requested resolution.
-The standard `examples/showcase.json` is 1280×720 at 30 FPS.
-
-It uses `resvg` for rasterizing SVG vector scenes, Cisco's OpenH264 encoder,
-and the Rust `mp4` muxer. **No Python, FFmpeg, headless browser, or Godot.**
-
-**Architecture clarification:** the JSON scripting and original animated SVG
-authoring are in Ain, while full-color MP4 compression now needs a native
-*Rust codec backend* in `ainv`. Ain's current UTF-8-only `fswrite` cannot
-produce H.264 binary video on its own. This is a pragmatic native library
-approach, like other languages' multimedia libraries, and makes no changes to
-`honerop/ain`. It is not strictly an all-Ain encoder.
-
-On NixOS, in a terminal, copy and paste this whole block. It works with the
-existing `ainv-workspace` and does not delete your directories:
+Use a different online narrator or speech speed:
 
 ```sh
-nix --extra-experimental-features 'nix-command flakes' \
-  shell nixpkgs#git nixpkgs#cargo nixpkgs#rustc nixpkgs#gcc nixpkgs#nasm \
-  -c bash -c '
-set -euo pipefail
-cd "$HOME/dev/ainv-workspace/ainv"
-git pull --ff-only
-cargo run --release --manifest-path native/Cargo.toml -- examples/showcase.json showcase.mp4
-ls -lh showcase.mp4
-'
+nix run github:honerop/ainv -- ./lesson.json ./lesson.mp4 \
+  --voice en-US-JennyNeural --rate=-10%
 ```
 
-This writes `~/dev/ainv-workspace/ainv/showcase.mp4`. To play it without
-relying on your desktop's misleading default file associations:
+Use `--music path/to/music.wav` for looping background music. Paths for
+`audio` and `music` in JSON resolve **relative to the JSON file**; the
+`--music` command-line path also resolves relative to the JSON file.
+Choose `--no-subtitles` to suppress both the SRT file and the embedded
+MP4 subtitle stream. `nix run github:honerop/ainv -- --help` shows the CLI.
 
-```sh
-nix shell nixpkgs#mpv -c mpv "$HOME/dev/ainv-workspace/ainv/showcase.mp4"
+## Architecture
+
+```text
+JSON / Ain-generated JSON
+           |
+           v
+Python scene director (stdlib only)
+     |                      |
+     |               Edge TTS per scene
+     |                      |
+     |               ffprobe durations
+     v                      |
+timeline with exact integer frame counts
+     |
+     v
+Rust renderer: SVG -> resvg -> OpenH264 -> MP4
+     |
+     v
+FFmpeg: align voice, mix optional music, embed subtitles -> narrated MP4
 ```
 
-To check the fast test render instead of a full 13-second HD video:
+The existing Ain-based SVG director (`preview.ain`) remains available.
+The native renderer is a Rust codec backend, not an Ain-only encoder.
+Python is used for orchestration, not animation rendering. FFmpeg is used
+for audio/video muxing and subtitles, not for the original SVG rasterization.
 
-```sh
-cargo run --release --manifest-path native/Cargo.toml -- examples/mp4-smoke.json test.mp4
-```
+## A narrated math video
 
-The MP4 exporter produces **silent video** for now. The full showcase render
-encodes hundreds of HD frames and can be substantially slower than generating
-the vector SVG. The MP4 backend also has stricter limits than SVG: even
-dimensions in 64×64..1920×1080, FPS in 1..60 and no more than 18000 frames.
-The native codec source in `native/src` is independent of Ain compiler code.
-
-## High-quality animated SVG director
-
-The original Y4M prototype is very low resolution because Ain currently writes
-UTF-8 text rather than raw bytes. A second, much more capable renderer is now
-written entirely in Ain at `preview.ain`. It creates one standalone **animated
-SVG** with vector-quality graphics, styled text, curves and timelines.
-
-Try the three-scene 1280×720 mathematical explainer:
-
-```sh
-AIN_VIDEO_SPEC=examples/showcase.json \
-AIN_VIDEO_PREVIEW=showcase.svg \
-ainc run preview.ain
-
-xdg-open showcase.svg
-```
-
-The SVG animation plays in modern browsers. It stays sharp at higher
-resolutions, with scalable text and shapes, rather than the previous tiny
-pixelated font. You can use `xdg-open` or open the SVG in your preferred
-browser. **This is animated vector content, not a downloadable MP4 video**:
-the current Ain-only Y4M writer remains a separate basic video prototype.
-
-### Vector JSON scene features
-
-- Multiple sequential scenes with `frames` or `duration` (seconds), each
-  with its own dark-theme background.
-- `rect` (including rounded corners), `circle`, `line`, `arrow`,
-  `polyline` (animated hand-drawn chart curve), and `text`.
-- Properties with `from` and `to` keyframes, interpolated with linear or
-  smoothly eased animations.
-- Unicode and mathematical symbols in scalable text.
-- Named color palette: `ink`, `navy`, `panel`, `slate`, `muted`,
-  `white`, `ice`, `cyan`, `blue`, `purple`, `rose`,
-  `red`, `orange`, `yellow`, `green`.
-- Shape opacity, SVG-native resolution independence, and no video-processing
-  dependency. The generator is 100% Ain.
-
-See [examples/showcase.json](examples/showcase.json) and
-[preview.ain](preview.ain) for the current format. The Ain smoke test
-is `tests/preview_smoke.ain`.
-
-## Quick start
-
-Install or build the Ain compiler (`ainc`), then run this command from the
-`ainv` repository root:
-
-```sh
-AIN_VIDEO_SPEC=examples/explainer.json \
-AIN_VIDEO_OUTPUT=explainer.y4m \
-ainc run render.ain
-```
-
-If you keep both repositories next to each other, you can use the Ain compiler
-directly without installing `ainc`:
-
-```sh
-git clone https://github.com/honerop/ain.git ../ain
-AIN_VIDEO_SPEC=examples/explainer.json \
-AIN_VIDEO_OUTPUT=explainer.y4m \
-cargo run --manifest-path ../ain/Cargo.toml -- run render.ain
-```
-
-The `ainc` and Cargo commands **compile and run the Ain application**, rather
-than acting as the video renderer. All of the rendering and file output happens
-in `render.ain`.
-
-## Complete NixOS workflow
-
-No global installs, and the video renderer does not require Python, FFmpeg,
-librsvg or any non-Ain application code. The compiler itself is built with Rust.
-
-If your terminal does not already have flakes enabled, use
-`nix --extra-experimental-features 'nix-command flakes' shell ...` in place of
-`nix shell ...`.
-
-Open a temporary development shell, clone the compiler and video app, build
-the compiler, and run the demo:
-
-```sh
-nix shell nixpkgs#git nixpkgs#cargo nixpkgs#rustc
-
-mkdir -p ~/dev
-cd ~/dev
-git clone https://github.com/honerop/ain.git
-git clone https://github.com/honerop/ainv.git
-
-cargo build --release --manifest-path ain/Cargo.toml
-
-cd ainv
-../ain/target/release/ainc --version
-../ain/target/release/ainc check render.ain
-
-AIN_VIDEO_SPEC=examples/explainer.json \
-AIN_VIDEO_OUTPUT=explainer.y4m \
-../ain/target/release/ainc run render.ain
-
-../ain/target/release/ainc run tests/smoke.ain
-ls -lh explainer.y4m
-```
-
-This makes `~/dev/ainv/explainer.y4m`. Generating the uncompressed video
-may take some time because the initial implementation constructs pixel strings
-one sample at a time.
-
-For optional playback only (not rendering or encoding), install/run a player,
-for example `nix shell nixpkgs#mpv -c mpv explainer.y4m`.
-A player may use decoder libraries internally; ainv does not call them.
-
-For subsequent runs:
-
-```sh
-cd ~/dev/ainv
-git pull --ff-only
-cd ../ain
-git pull --ff-only
-cargo build --release
-cd ../ainv
-AIN_VIDEO_SPEC=examples/explainer.json \
-AIN_VIDEO_OUTPUT=explainer.y4m \
-../ain/target/release/ainc run render.ain
-```
-
-## JSON input
+Write `lesson.json`:
 
 ```json
 {
-  "width": 96,
-  "height": 64,
-  "fps": 8,
+  "width": 1280,
+  "height": 720,
+  "fps": 30,
+  "voice": "en-US-AndrewNeural",
+  "voice_rate": "-5%",
   "scenes": [
     {
-      "frames": 8,
-      "background": "black",
+      "duration": "auto",
+      "narration": "The graph of x squared curves upward.",
+      "background": "ink",
       "elements": [
         {
-          "kind": "rect",
-          "x": 9, "y": 42,
-          "width": 76, "height": 3,
-          "fill": "cyan",
-          "from": {"width": 0},
-          "ease": "smooth"
+          "kind": "text", "x": 110, "y": 125,
+          "value": "y = x²", "font_size": 70, "fill": "white",
+          "from": {"opacity": 0}, "start": 0, "end": 0.2
         },
         {
-          "kind": "text",
-          "x": 8, "y": 7,
-          "value": "AIN VIDEO",
-          "scale": 2, "fill": "white"
+          "kind": "axes",
+          "x": 170, "y": 190, "width": 940, "height": 400,
+          "x_min": -3, "x_max": 3, "y_min": -1, "y_max": 9,
+          "stroke": "slate"
+        },
+        {
+          "kind": "plot", "function": "quadratic",
+          "x": 170, "y": 190, "width": 940, "height": 400,
+          "x_min": -3, "x_max": 3, "y_min": -1, "y_max": 9,
+          "stroke": "cyan", "stroke_width": 7,
+          "start": 0.2, "end": 0.85, "ease": "smooth"
         }
       ]
     }
@@ -248,49 +111,70 @@ AIN_VIDEO_OUTPUT=explainer.y4m \
 }
 ```
 
-Scenes run in order. Supply a duration in seconds or a frame count for each
-scene. Object coordinates may animate through `from` and `to` keyframes,
-using `linear` or `smooth` easing.
-
-Supported objects are `rect`, `circle`, and `text`. Text uses a small
-built-in 3×5 bitmap font (uppercase letters, digits, and limited punctuation).
-
-## Output format and limitations
-
-Ain currently writes UTF-8 text rather than arbitrary binary bytes.
-The renderer exploits the ASCII-compatible part of the YUV420 pixel range to
-produce a valid raw **.y4m** video without adding a file-writing builtin.
-
-This is a proof of concept, **not a compressed MP4 encoder**. The format is
-uncompressed, and pixel values are intentionally restricted. Colors are
-represented primarily by luminance, with fixed chroma values.
-
-- Maximum 320×180, up to 24 FPS and 240 total frames; requested values beyond
-  those bounds are clamped or truncated.
-- Scenes with rectangles, circles, and bitmap text, with geometry animation.
-- No sound, imported images/video, line/path objects, LaTeX, or antialiasing.
-- Output is built in memory, so rendering longer clips can be slow.
-- Use trusted JSON only; full schema validation and error handling remain work
-  for a later version.
-
-## Tests
-
-Run the example first, then verify its Y4M structure **using Ain**:
-
 ```sh
-AIN_VIDEO_SPEC=examples/explainer.json \
-AIN_VIDEO_OUTPUT=explainer.y4m \
-ainc run render.ain
-
-ainc run tests/smoke.ain
+nix run github:honerop/ainv -- lesson.json lesson.mp4
 ```
 
-The repository has a GitHub Actions workflow to run the same checks against
-the current Ain compiler.
+Narration can instead be `"audio": "recording.wav"`, using your own
+recording without network access. Do not use `audio` and `narration` on
+the same scene. `caption` overrides subtitle text, and `voice` or
+`voice_rate` can be set per scene.
 
-## Repository boundaries
+### How timing works
 
-The video app lives in **honerop/ainv**, not in **honerop/ain**.
-The latter is a programming-language project and remains a separate dependency
-for compiling Ain source. The generator has no Python, Rust, or other language
-source files of its own.
+Each scene has either `duration` (seconds), `frames`, or
+`duration: "auto"`. Speech is generated **before** rendering. The director
+measures each clip and makes the scene long enough for the full audio and
+a 350 ms tail. A longer explicit scene duration is preserved. Scene starts
+are aligned to actual video frames, so audio, transitions, and subtitles share
+one timeline.
+
+Each element can use `start` and `end` in **0..1**, the fraction of its
+scene over which it animates. Animated numeric fields can use `from` /
+`to`, with `ease: "smooth"`. A `plot` draws its curve as time advances;
+set `"draw": false` to show the full curve immediately.
+
+### Available vector elements
+
+| Kind | Main fields |
+| --- | --- |
+| `text` | `x`, `y`, `value`, `font_size`, `weight`, `fill` |
+| `rect` | `x`, `y`, `width`, `height`, `radius`, `fill` |
+| `circle` | `cx`, `cy`, `r`, `fill` |
+| `line`, `arrow` | `x1`, `y1`, `x2`, `y2`, `stroke` |
+| `polyline` | `points`, `stroke`, `stroke_width` |
+| `axes` | position, dimensions, `x_min`, `x_max`, `y_min`, `y_max` |
+| `plot` | same coordinate bounds, `function`, `a`, `b`, `c`, `draw` |
+
+Built-in plot functions: `sin`, `cos`, `quadratic` / `parabola`,
+`linear`, `cubic`, `exp`, `gaussian`.
+
+The color palette uses names such as `ink`, `panel`, `slate`,
+`white`, `muted`, `cyan`, `ice`, `blue`, `orange`, and `green`.
+
+AinV currently supports Unicode math labels, but **not full LaTeX,
+symbol-by-symbol equation morphing, 3D camera moves, or automatic
+storyboarding**. Matching an actual 3Blue1Brown episode takes thoughtful
+mathematical visuals, deliberate pacing, and narration. Those are not features
+a dependency installer can supply.
+
+## Development and tests
+
+```sh
+# From a clone of honerop/ainv:
+nix develop           # if a dev shell is available in your checkout
+python3 -m unittest discover -s tests -p test_pipeline.py -v
+cargo test --manifest-path native/Cargo.toml
+cargo run --release --manifest-path native/Cargo.toml -- \
+  examples/mp4-smoke.json smoke.mp4
+```
+
+To render the default example using the Nix entry point:
+
+```sh
+nix run . -- ./examples/math-explainer.json ./math.mp4
+```
+
+GitHub Actions tests the Python timeline and muxer and the Rust renderer.
+Legacy Ain-only experiments remain in `render.ain`, `preview.ain`, and
+`tests/`.
