@@ -101,7 +101,7 @@ sound_args state duration output = sound_tail field state "args" state duration 
 copy_args out = a6 "-y" "-i" workpath "silent.mp4" "-c" "copy" out
 srt_time ms = j6 pad2 / ms 3600000 ":" pad2 % / ms 60000 60 ":" pad2 % / ms 1000 60 concat "," pad3 % ms 1000
 caption_text scene = sv scene "caption" now_text scene
-sub_step state = put put state "text" concat sv state "text" "" j6 str + iv state "i" 0 1 "\n" srt_time / * iv audio_indexed state "start_frame" 0 1000 iv state "fps" 30 " --> " srt_time / * + iv audio_indexed state "start_frame" 0 iv audio_indexed state "frames" 1 1000 iv state "fps" 30 concat "\n" concat caption_text audio_indexed state "\n\n" "i" boxint + iv state "i" 0 1
+sub_step state = put put state "text" boxstr concat sv state "text" "" j6 str + iv state "i" 0 1 "\n" srt_time / * iv audio_indexed state "start_frame" 0 1000 iv state "fps" 30 " --> " srt_time / * + iv audio_indexed state "start_frame" 0 iv audio_indexed state "frames" 1 1000 iv state "fps" 30 concat "\n" concat caption_text audio_indexed state "\n\n" "i" boxint + iv state "i" 0 1
 
 args = argv _
 input_file = if > size args 0 astext get args 0 environ "AINV_DEFAULT_SPEC"
