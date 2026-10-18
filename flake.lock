@@ -1,6 +1,40 @@
 {
   "nodes": {
+    "ain": {
+      "inputs": {
+        "nixpkgs": "nixpkgs"
+      },
+      "locked": {
+        "lastModified": 1792339547,
+        "narHash": "sha256-a1gTJJIPdrsPzU9yy7UeMaPpTdoM3mMY67/mElHrAF8=",
+        "owner": "honerop",
+        "repo": "ain",
+        "rev": "975c0b2db1680128886b23033e6b26b69e87db58",
+        "type": "github"
+      },
+      "original": {
+        "owner": "honerop",
+        "repo": "ain",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
+      "locked": {
+        "lastModified": 1792094642,
+        "narHash": "sha256-zp8ToDMnqZcu4o4IH9pdwXFXGp7yLm/M0dEnNWnyd7I=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "fe13242281a67641c0102cdb1087f0ebe586c7df",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_2": {
       "locked": {
         "lastModified": 1791956154,
         "narHash": "sha256-jBYGPi4udQ9uo4KQp9m2J0546nJVQitG15gvZSaVVAs=",
@@ -18,7 +52,8 @@
     },
     "root": {
       "inputs": {
-        "nixpkgs": "nixpkgs"
+        "ain": "ain",
+        "nixpkgs": "nixpkgs_2"
       }
     }
   },
