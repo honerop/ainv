@@ -54,11 +54,12 @@ ttsargs a = a7 "--voice" sv a "voice" "en-US-AndrewNeural" concat "--rate=" sv a
 voice_success result = and asbool field result "ok" == asint field field result "value" "code" 0
 fallback_args a = a7 "-v" "en-us" "-s" "155" "-w" voicefile iv a "index" 0 now_text a
 synth_fallback a result = if voice_success result _ ok processrun environ "AINV_ESPEAK" fallback_args a
-synth a = if or == now_text a "" == environ "AINV_SKIP_TTS" "1" _ synth_fallback a processrun environ "AINV_EDGE_TTS" ttsargs a
+synth a = if or hasfield a "audio" or == now_text a "" == environ "AINV_SKIP_TTS" "1" _ synth_fallback a processrun environ "AINV_EDGE_TTS" ttsargs a
+scene_audio a = if hasfield a "audio" assetpath sv a "audio" "" if or == now_text a "" == environ "AINV_SKIP_TTS" "1" "" voicefile iv a "index" 0
 ffprobe_args filename = a7 "-v" "error" "-show_entries" "format=duration" "-of" "default=noprint_wrappers=1:nokey=1" filename
 msec text = + * 1000 num before trim text "." num strjoin listtake split concat after trim text "." "000" "" 3 ""
 probelen filename = msec astext field field processrun environ "AINV_FFPROBE" ffprobe_args filename "value" "stdout"
-audioms scene = if or == now_text scene "" == environ "AINV_SKIP_TTS" "1" 0 probelen voicefile iv scene "index" 0
+audioms scene = if == scene_audio scene "" 0 probelen scene_audio scene
 index_scene s = put get field s "scenes" iv s "i" 0 "index" boxint iv s "i" 0
 index_advance s scene = put put s "indexed" push field s "indexed" scene "i" boxint + iv s "i" 0 1
 index_step s = index_advance s index_scene s
@@ -113,11 +114,17 @@ seconds_ms ms = j3 str / ms 1000 "." pad3 % ms 1000
 audio_indexed state = get field state "timeline" iv state "i" 0
 audio_next state = put state "i" boxint + iv state "i" 0 1
 voice_filter state scene = j6 "[" str iv state "input" 2 ":a]aresample=48000,adelay=" str / * iv scene "start_frame" 0 1000 iv state "fps" 30 concat ":all=1[v" str iv state "input" 2 "];"
-audio_with_args state scene = put state "args" ap ap field state "args" "-i" voicefile iv scene "index" 0
+audio_with_args state scene = put state "args" pair_arg field state "args" "-i" scene_audio scene
 audio_with_filter state scene = put state "filters" boxstr concat sv state "filters" "" voice_filter state scene
 audio_with_refs state = put state "refs" boxstr concat sv state "refs" "[sil]" j3 "[v" str iv state "input" 2 "]"
 audio_add state scene = put audio_with_refs audio_with_filter audio_with_args state scene scene "input" boxint + iv state "input" 2 1
-audio_step state = audio_next if or == now_text audio_indexed state "" == environ "AINV_SKIP_TTS" "1" state audio_add state audio_indexed state
+audio_step state = audio_next if == scene_audio audio_indexed state "" state audio_add state audio_indexed state
+music_source _ = if hasfield project "music" assetpath sv project "music" "" ""
+music_input state = put state "args" pair_arg pair_arg field state "args" "-stream_loop" "-1" "-i" music_source _
+music_volume _ = if >= iv project "music_volume" 15 100 "1" j3 "0." pad2 clamp iv project "music_volume" 15 0 99 ""
+music_filter state = j5 "[" str iv state "input" 2 ":a]aresample=48000,volume=" music_volume _ "[bg];"
+music_add state = put put put music_input state "filters" boxstr concat sv state "filters" "" music_filter state "refs" boxstr concat sv state "refs" "[sil]" "[bg]" "input" boxint + iv state "input" 2 1
+music_apply state = if == music_source _ "" state music_add state
 filter_graph state = j4 sv state "filters" "" "[1:a]volume=0[sil];" sv state "refs" "[sil]" concat "amix=inputs=" concat str - iv state "input" 2 1 ":duration=first:dropout_transition=0,aresample=48000,alimiter=limit=0.95[aout]"
 sound_base duration = ap ap ap ap ap ap ap ap ap ap ap a1 "-y" "-hide_banner" "-loglevel" "error" "-i" workpath "silent.mp4" "-f" "lavfi" "-t" seconds_ms duration "-i" "anullsrc=r=48000:cl=stereo"
 sound_tail args state duration output = ap ap ap ap ap ap ap ap ap ap ap ap ap ap ap args "-filter_complex" filter_graph state "-map" "0:v:0" "-map" "[aout]" "-c:v" "copy" "-c:a" "aac" "-b:a" "192k" "-t" seconds_ms duration output
@@ -158,7 +165,7 @@ each "raster_frame" field frame_state "frames"
 print "ainv: encoding H.264 MP4"
 ok processrun environ "AINV_FFMPEG" if has_media mixed_output fps ff_video_args fps
 length_ms = / * total_frames 1000 fps
-audio_state = iterate "audio_step" size timeline put put put put put put put record _ "timeline" timeline "i" boxint 0 "input" boxint 2 "args" sound_base length_ms "filters" boxstr "" "refs" boxstr "[sil]" "fps" boxint fps
+audio_state = music_apply iterate "audio_step" size timeline put put put put put put put record _ "timeline" timeline "i" boxint 0 "input" boxint 2 "args" sound_base length_ms "filters" boxstr "" "refs" boxstr "[sil]" "fps" boxint fps
 print "ainv: exporting audio and subtitles"
 ok processrun environ "AINV_FFMPEG" if > iv audio_state "input" 2 2 sound_args audio_state length_ms output_file copy_args output_file
 subtitles = iterate "sub_step" size timeline put put put put record _ "timeline" timeline "text" boxstr "" "i" boxint 0 "fps" boxint fps
