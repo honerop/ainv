@@ -63,6 +63,7 @@
           set -euo pipefail
           export AINV_DEFAULT_SPEC="${./examples/math-explainer.json}"
           export AINV_EDGE_TTS="${python}/bin/edge-tts"
+          export AINV_ESPEAK="${pkgs.espeak-ng}/bin/espeak-ng"
           export AINV_FFPROBE="${pkgs.ffmpeg}/bin/ffprobe"
           export AINV_FFMPEG="${pkgs.ffmpeg}/bin/ffmpeg"
           export AINV_RSVG="${pkgs.librsvg}/bin/rsvg-convert"
