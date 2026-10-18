@@ -1,0 +1,52 @@
+{
+  "width": 160,
+  "height": 96,
+  "fps": 4,
+  "music": "fixtures/music.wav",
+  "music_volume": 18,
+  "scenes": [
+    {
+      "frames": 4,
+      "background": "ink",
+      "media": {
+        "kind": "image",
+        "src": "fixtures/still.png",
+        "fit": "cover"
+      },
+      "audio": "fixtures/sound.wav",
+      "elements": [
+        {
+          "kind": "text",
+          "x": 10,
+          "y": 23,
+          "value": "PHOTO",
+          "fill": "white",
+          "font_size": 20
+        }
+      ]
+    },
+    {
+      "frames": 4,
+      "background": "navy",
+      "media": {
+        "kind": "video",
+        "src": "fixtures/clip.mp4",
+        "fit": "contain"
+      },
+      "elements": [
+        {
+          "kind": "text",
+          "x": 10,
+          "y": 78,
+          "value": "VIDEO",
+          "fill": "white",
+          "font_size": 22,
+          "from": {
+            "x": 100
+          },
+          "ease": "smooth"
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 {
-  description = "AinV: Ain-authored mathematical videos with narrated MP4 output";
+  description = "AinV: Ain-authored general video timeline and MP4 media compositor";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   inputs.ain.url = "github:honerop/ain";
@@ -61,12 +61,13 @@
           fonts = pkgs.makeFontsConf { fontDirectories = [ pkgs.dejavu_fonts ]; };
         in pkgs.writeShellScriptBin "ainv" ''
           set -euo pipefail
-          export AINV_DEFAULT_SPEC="${./examples/math-explainer.json}"
+          export AINV_DEFAULT_SPEC="${./examples/general-showcase.json}"
           export AINV_EDGE_TTS="${python}/bin/edge-tts"
           export AINV_ESPEAK="${pkgs.espeak-ng}/bin/espeak-ng"
           export AINV_FFPROBE="${pkgs.ffmpeg}/bin/ffprobe"
           export AINV_FFMPEG="${pkgs.ffmpeg}/bin/ffmpeg"
           export AINV_RSVG="${pkgs.librsvg}/bin/rsvg-convert"
+          export AINV_DIRNAME="${pkgs.coreutils}/bin/dirname"
           export FONTCONFIG_FILE="${fonts}"
           export AIN_PROCESS_TIMEOUT_MS=1800000
           export AINV_WORK="$(mktemp -d)"
