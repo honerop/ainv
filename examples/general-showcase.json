@@ -1,0 +1,225 @@
+{
+  "width": 1280,
+  "height": 720,
+  "fps": 30,
+  "scenes": [
+    {
+      "duration": 4,
+      "background": "ink",
+      "narration": "Every video starts with a story. From a quick announcement to an entire documentary, the same timeline can present it.",
+      "elements": [
+        {
+          "kind": "rect",
+          "x": 90,
+          "y": 90,
+          "width": 13,
+          "height": 520,
+          "fill": "cyan",
+          "from": {
+            "height": 0
+          },
+          "ease": "smooth",
+          "start_percent": 0,
+          "end_percent": 45
+        },
+        {
+          "kind": "text",
+          "x": 148,
+          "y": 240,
+          "value": "CREATE ANY STORY",
+          "font_size": 76,
+          "fill": "white",
+          "weight": "bold",
+          "from": {
+            "x": 250,
+            "opacity": 0
+          },
+          "start_percent": 10,
+          "end_percent": 60,
+          "ease": "smooth"
+        },
+        {
+          "kind": "text",
+          "x": 152,
+          "y": 312,
+          "value": "One timeline. Many types of video.",
+          "font_size": 35,
+          "fill": "ice",
+          "from": {
+            "opacity": 0
+          },
+          "start_percent": 30,
+          "end_percent": 70
+        },
+        {
+          "kind": "rect",
+          "x": 150,
+          "y": 379,
+          "width": 470,
+          "height": 5,
+          "fill": "cyan",
+          "from": {
+            "width": 0
+          },
+          "start_percent": 25,
+          "end_percent": 85
+        }
+      ]
+    },
+    {
+      "duration": 4,
+      "background": "navy",
+      "narration": "Combine footage, photographs, voice, music, and animated text. Use the pieces that suit the subject.",
+      "elements": [
+        {
+          "kind": "text",
+          "x": 92,
+          "y": 152,
+          "value": "MIX YOUR MEDIA",
+          "font_size": 67,
+          "fill": "white",
+          "weight": "bold"
+        },
+        {
+          "kind": "rect",
+          "x": 92,
+          "y": 210,
+          "width": 320,
+          "height": 330,
+          "radius": 18,
+          "fill": "panel",
+          "from": {
+            "x": 55
+          },
+          "start_percent": 5,
+          "end_percent": 45
+        },
+        {
+          "kind": "rect",
+          "x": 478,
+          "y": 210,
+          "width": 320,
+          "height": 330,
+          "radius": 18,
+          "fill": "panel",
+          "from": {
+            "opacity": 0
+          },
+          "start_percent": 15,
+          "end_percent": 55
+        },
+        {
+          "kind": "rect",
+          "x": 864,
+          "y": 210,
+          "width": 320,
+          "height": 330,
+          "radius": 18,
+          "fill": "panel",
+          "from": {
+            "opacity": 0
+          },
+          "start_percent": 25,
+          "end_percent": 65
+        },
+        {
+          "kind": "circle",
+          "cx": 252,
+          "cy": 332,
+          "r": 69,
+          "fill": "blue"
+        },
+        {
+          "kind": "circle",
+          "cx": 638,
+          "cy": 332,
+          "r": 69,
+          "fill": "cyan"
+        },
+        {
+          "kind": "circle",
+          "cx": 1024,
+          "cy": 332,
+          "r": 69,
+          "fill": "orange"
+        },
+        {
+          "kind": "text",
+          "x": 167,
+          "y": 466,
+          "value": "Visuals",
+          "font_size": 34,
+          "fill": "white"
+        },
+        {
+          "kind": "text",
+          "x": 548,
+          "y": 466,
+          "value": "Motion",
+          "font_size": 34,
+          "fill": "white"
+        },
+        {
+          "kind": "text",
+          "x": 943,
+          "y": 466,
+          "value": "Sound",
+          "font_size": 34,
+          "fill": "white"
+        }
+      ]
+    },
+    {
+      "duration": 4,
+      "background": "ink",
+      "narration": "Ain is the authoring language. The rendering tools are dependencies, not a second application hidden behind the scenes.",
+      "elements": [
+        {
+          "kind": "text",
+          "x": 98,
+          "y": 164,
+          "value": "WRITTEN IN AIN",
+          "font_size": 70,
+          "fill": "white",
+          "weight": "bold"
+        },
+        {
+          "kind": "text",
+          "x": 100,
+          "y": 255,
+          "value": "Footage · Graphics · Music · Voice",
+          "font_size": 35,
+          "fill": "cyan"
+        },
+        {
+          "kind": "rect",
+          "x": 98,
+          "y": 350,
+          "width": 1070,
+          "height": 120,
+          "radius": 18,
+          "fill": "panel",
+          "from": {
+            "width": 0
+          },
+          "start_percent": 0,
+          "end_percent": 55
+        },
+        {
+          "kind": "text",
+          "x": 147,
+          "y": 428,
+          "value": "JSON → AIN TIMELINE → H.264 MP4",
+          "font_size": 42,
+          "fill": "ice",
+          "weight": "bold",
+          "from": {
+            "opacity": 0
+          },
+          "start_percent": 40,
+          "end_percent": 80
+        }
+      ]
+    }
+  ]
+}
