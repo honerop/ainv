@@ -54,8 +54,34 @@
         };
       });
 
-      checks = eachSystem (system: {
-        native = nativeFor system;
-      });
+      checks = eachSystem (system:
+        let
+          pkgs = pkgsFor system;
+          python = pkgs.python3.withPackages (ps: [ ps.edge-tts ]);
+        in {
+          native = nativeFor system;
+          pipeline = pkgs.runCommand "ainv-pipeline-tests" {
+            nativeBuildInputs = [ python pkgs.ffmpeg ];
+          } ''
+            export HOME="$TMPDIR"
+            cd ${./.}
+            python3 -m unittest discover -s tests -p test_pipeline.py -v
+            touch "$out"
+          '';
+        });
+
+      devShells = eachSystem (system:
+        let
+          pkgs = pkgsFor system;
+          python = pkgs.python3.withPackages (ps: [ ps.edge-tts ]);
+        in {
+          default = pkgs.mkShell {
+            packages = [
+              python pkgs.ffmpeg pkgs.rustc pkgs.cargo
+              pkgs.gcc pkgs.nasm pkgs.pkg-config pkgs.fontconfig
+            ];
+            AINV_FONT_DIR = "${pkgs.dejavu_fonts}/share/fonts/truetype";
+          };
+        });
     };
 }
