@@ -241,7 +241,7 @@ def prepare(source, target, attribution_path=None, cache_dir=None):
             media["src"] = _absolute(media["src"], root)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(project, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    if attribution_path:
+    if attribution_path and credits:
         ap = Path(attribution_path)
         ap.parent.mkdir(parents=True, exist_ok=True)
         ap.write_text(json.dumps(credits, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
