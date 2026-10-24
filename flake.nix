@@ -74,7 +74,8 @@
           trap 'rm -rf "$EIDOLON_WORK"' EXIT
           if [ "''${1-}" = "images" ]; then
             shift
-            exec "${python}/bin/python3" "${./tools/media_assets.py}" "$@"
+            "${python}/bin/python3" "${./tools/media_assets.py}" "$@"
+            exit 0
           fi
           project="''${1:-$EIDOLON_DEFAULT_SPEC}"
           output="''${2:-showcase.mp4}"
