@@ -106,7 +106,8 @@
         in {
           babel-director = director;
           assets = pkgs.runCommand "eidolon-assets-tests" { nativeBuildInputs = [ pkgs.python3 ]; } ''
-            ${pkgs.python3}/bin/python -m unittest discover -s ${./tests} -p 'test_media_assets.py' -v
+            cd ${./.}
+            ${pkgs.python3}/bin/python -m unittest discover -s tests -p 'test_media_assets.py' -v
             touch "$out"
           '';
           smoke = pkgs.runCommand "eidolon-smoke" { } ''
