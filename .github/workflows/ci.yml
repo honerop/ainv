@@ -1,4 +1,4 @@
-name: Ain video smoke test
+name: Babel video smoke test
 
 on:
   push:
@@ -11,19 +11,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - name: Check out Ain compiler
-        run: git clone --depth 1 https://github.com/honerop/ain.git /tmp/ain
-      - name: Generate example video using Ain only
+      - name: Check out Babel compiler
+        run: git clone --depth 1 https://github.com/honerop/babel.git /tmp/babel
+      - name: Generate example video using Babel only
         env:
-          AIN_VIDEO_SPEC: examples/explainer.json
-          AIN_VIDEO_OUTPUT: explainer.y4m
-        run: cargo run --quiet --manifest-path /tmp/ain/Cargo.toml -- run render.ain
-      - name: Verify Y4M video using Ain only
-        run: cargo run --quiet --manifest-path /tmp/ain/Cargo.toml -- run tests/smoke.ain
-      - name: Generate high quality vector animation in Ain
+          BABEL_VIDEO_SPEC: examples/explainer.json
+          BABEL_VIDEO_OUTPUT: explainer.y4m
+        run: cargo run --quiet --manifest-path /tmp/babel/Cargo.toml -- run render.babel
+      - name: Verify Y4M video using Babel only
+        run: cargo run --quiet --manifest-path /tmp/babel/Cargo.toml -- run tests/smoke.babel
+      - name: Generate high quality vector animation in Babel
         env:
-          AIN_VIDEO_SPEC: examples/showcase.json
-          AIN_VIDEO_PREVIEW: showcase.svg
-        run: cargo run --quiet --manifest-path /tmp/ain/Cargo.toml -- run preview.ain
-      - name: Verify vector animation in Ain
-        run: cargo run --quiet --manifest-path /tmp/ain/Cargo.toml -- run tests/preview_smoke.ain
+          BABEL_VIDEO_SPEC: examples/showcase.json
+          BABEL_VIDEO_PREVIEW: showcase.svg
+        run: cargo run --quiet --manifest-path /tmp/babel/Cargo.toml -- run preview.babel
+      - name: Verify vector animation in Babel
+        run: cargo run --quiet --manifest-path /tmp/babel/Cargo.toml -- run tests/preview_smoke.babel

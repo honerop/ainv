@@ -1,6 +1,6 @@
-# Self-contained Ain YUV4MPEG2 (Y4M) video generator, without external encoders.
-# Set AIN_VIDEO_SPEC (JSON path) and AIN_VIDEO_OUTPUT (output .y4m path).
-# AIN fswrite currently writes UTF-8, so frames use ASCII-safe YUV420 samples.
+# Self-contained Babel YUV4MPEG2 (Y4M) video generator, without external encoders.
+# Set BABEL_VIDEO_SPEC (JSON path) and BABEL_VIDEO_OUTPUT (output .y4m path).
+# BABEL fswrite currently writes UTF-8, so frames use ASCII-safe YUV420 samples.
 # This is a low-color, uncompressed video generator, not an MP4 encoder.
 
 ival obj key fallback = if hasfield obj key asint field obj key fallback
@@ -42,7 +42,7 @@ plot state = put put state "raw" boxstr concat astext field state "raw" color fi
 luma state found = iterate "plot" * asint field state "width" asint field state "height" put put put put put put put record _ "scene" field found "scene" "time" field found "time" "count" boxint span field found "scene" asint field state "fps" "width" field state "width" "height" field state "height" "at" boxint 0 "raw" boxstr ""
 next_frame state = put put state "video" boxstr concat astext field state "video" concat concat "FRAME\n" astext field luma state at_scene field field state "project" "scenes" asint field state "fps" asint field state "index" 0 "raw" astext field state "chroma" "index" boxint + asint field state "index" 1
 
-project = json fsread environ "AIN_VIDEO_SPEC"
+project = json fsread environ "BABEL_VIDEO_SPEC"
 width = * / clamp ival project "width" 160 16 320 2 2
 height = * / clamp ival project "height" 90 16 180 2 2
 fps = clamp ival project "fps" 12 1 24
@@ -51,5 +51,5 @@ chroma = repeat "~" / * width height 4
 header = concat concat concat concat concat concat "YUV4MPEG2 W" str width " H" str height " F" str fps ":1 Ip A1:1 C420jpeg\n"
 initial = put put put put put put put record _ "project" project "width" boxint width "height" boxint height "fps" boxint fps "chroma" boxstr concat chroma chroma "index" boxint 0 "video" boxstr header
 result = iterate "next_frame" frames initial
-fswrite environ "AIN_VIDEO_OUTPUT" astext field result "video"
+fswrite environ "BABEL_VIDEO_OUTPUT" astext field result "video"
 print concat concat "Wrote " str frames " Y4M frames"

@@ -1,10 +1,10 @@
-name: Ain-native video director
+name: Babel-native video director
 
 on:
   push:
     paths:
-      - director.ain
-      - examples/ain-smoke.json
+      - director.babel
+      - examples/babel-smoke.json
       - .github/workflows/ain-director.yml
   pull_request:
   workflow_dispatch:
@@ -17,15 +17,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - name: Fetch Ain compiler
-        run: git clone --depth 1 https://github.com/honerop/ain.git /tmp/ain
-      - name: Check that director is valid Ain
-        run: cargo run --quiet --manifest-path /tmp/ain/Cargo.toml -- check director.ain
-      - name: Build Ain application
-        run: cargo run --quiet --manifest-path /tmp/ain/Cargo.toml -- build director.ain -o /tmp/ainv
+      - name: Fetch Babel compiler
+        run: git clone --depth 1 https://github.com/honerop/babel.git /tmp/babel
+      - name: Check that director is valid Babel
+        run: cargo run --quiet --manifest-path /tmp/babel/Cargo.toml -- check director.babel
+      - name: Build Babel application
+        run: cargo run --quiet --manifest-path /tmp/babel/Cargo.toml -- build director.babel -o /tmp/ainv
       - name: Install external video and graphics codecs
         run: sudo apt-get update && sudo apt-get install -y ffmpeg librsvg2-bin fonts-dejavu-core espeak-ng
-      - name: Render a real 3-frame MP4 with Ain
+      - name: Render a real 3-frame MP4 with Babel
         run: |
           set -euo pipefail
           export AINV_WORK="$(mktemp -d)"
@@ -33,11 +33,11 @@ jobs:
           export AINV_FFMPEG="$(command -v ffmpeg)"
           export AINV_FFPROBE="$(command -v ffprobe)"
           export AINV_EDGE_TTS=/bin/false
-          export AIN_PROCESS_TIMEOUT_MS=180000
-          /tmp/ainv examples/ain-smoke.json smoke-ain.mp4
-          test -s smoke-ain.mp4
-          ffprobe -v error -show_entries stream=codec_name,width,height -of json smoke-ain.mp4
-          test -s smoke-ain.srt
+          export BABEL_PROCESS_TIMEOUT_MS=180000
+          /tmp/ainv examples/babel-smoke.json smoke-babel.mp4
+          test -s smoke-babel.mp4
+          ffprobe -v error -show_entries stream=codec_name,width,height -of json smoke-babel.mp4
+          test -s smoke-babel.srt
       - name: Verify Edge TTS integration and AAC audio alignment without network
         run: |
           set -euo pipefail
@@ -62,12 +62,12 @@ jobs:
           export AINV_FFMPEG="$(command -v ffmpeg)"
           export AINV_FFPROBE="$(command -v ffprobe)"
           export AINV_EDGE_TTS=/tmp/mock-edge-tts
-          export AIN_PROCESS_TIMEOUT_MS=180000
-          /tmp/ainv examples/ain-voice-smoke.json voice-smoke.mp4
+          export BABEL_PROCESS_TIMEOUT_MS=180000
+          /tmp/ainv examples/babel-voice-smoke.json voice-smoke.mp4
           test -s voice-smoke.mp4
           test -s voice-smoke.srt
           ffprobe -v error -show_entries stream=codec_type -of csv=p=0 voice-smoke.mp4 | grep -qx audio
-      - name: Verify Ain offline speech fallback when Edge is blocked
+      - name: Verify Babel offline speech fallback when Edge is blocked
         run: |
           set -euo pipefail
           export AINV_WORK="$(mktemp -d)"
@@ -76,8 +76,8 @@ jobs:
           export AINV_FFPROBE="$(command -v ffprobe)"
           export AINV_EDGE_TTS=/bin/false
           export AINV_ESPEAK="$(command -v espeak-ng)"
-          export AIN_PROCESS_TIMEOUT_MS=180000
-          /tmp/ainv examples/ain-voice-smoke.json fallback.mp4
+          export BABEL_PROCESS_TIMEOUT_MS=180000
+          /tmp/ainv examples/babel-voice-smoke.json fallback.mp4
           test -s fallback.mp4
           ffprobe -v error -show_entries stream=codec_type -of csv=p=0 fallback.mp4 | grep -qx audio
       - name: Generate general-purpose photo, footage, voice, and music fixtures
@@ -88,7 +88,7 @@ jobs:
           ffmpeg -hide_banner -loglevel error -y -f lavfi -i "testsrc2=s=96x64:r=4:d=2" -c:v mpeg4 examples/fixtures/clip.mp4
           ffmpeg -hide_banner -loglevel error -y -f lavfi -i "sine=frequency=550:duration=0.7" examples/fixtures/sound.wav
           ffmpeg -hide_banner -loglevel error -y -f lavfi -i "sine=frequency=190:duration=2" examples/fixtures/music.wav
-      - name: Render image and video montage with audio and music using Ain
+      - name: Render image and video montage with audio and music using Babel
         run: |
           set -euo pipefail
           export AINV_WORK="$(mktemp -d)"
@@ -97,7 +97,7 @@ jobs:
           export AINV_FFPROBE="$(command -v ffprobe)"
           export AINV_EDGE_TTS=/bin/false
           export AINV_ESPEAK="$(command -v espeak-ng)"
-          export AIN_PROCESS_TIMEOUT_MS=180000
+          export BABEL_PROCESS_TIMEOUT_MS=180000
           /tmp/ainv examples/general-media-smoke.json montage.mp4
           test -s montage.mp4
           test -s montage.srt
@@ -113,7 +113,7 @@ jobs:
           export AINV_EDGE_TTS=/bin/false
           export AINV_ESPEAK="$(command -v espeak-ng)"
           export AINV_SKIP_TTS=1
-          export AIN_PROCESS_TIMEOUT_MS=180000
+          export BABEL_PROCESS_TIMEOUT_MS=180000
           jq '.width=160 | .height=96 | .fps=5 | .scenes |= map(.frames=15 | del(.narration))' examples/general-showcase.json > examples/general-short-regression.json
           jq '.width=160 | .height=96 | .fps=5 | .scenes |= map(.frames=15 | del(.narration))' examples/math-explainer.json > examples/math-short-regression.json
           /tmp/ainv examples/general-short-regression.json general-short.mp4

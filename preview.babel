@@ -1,7 +1,7 @@
 # AINV animated SVG director.
-# All vector graphics, timelines, easing, scenes, and SVG serialization are Ain.
-# No Python, FFmpeg, browser automation, or changes to the Ain compiler.
-# Usage: AIN_VIDEO_SPEC=examples/showcase.json AIN_VIDEO_PREVIEW=showcase.svg ainc run preview.ain
+# All vector graphics, timelines, easing, scenes, and SVG serialization are Babel.
+# No Python, FFmpeg, browser automation, or changes to the Babel compiler.
+# Usage: BABEL_VIDEO_SPEC=examples/showcase.json BABEL_VIDEO_PREVIEW=showcase.svg babelc run preview.babel
 
 sval obj key fallback = if hasfield obj key astext field obj key fallback
 ival obj key fallback = if hasfield obj key asint field obj key fallback
@@ -60,6 +60,6 @@ render_scenes scenes fps width height index begin output = if >= index size scen
 arrow_def _ = "<defs><marker id=\"ainv-arrow\" markerWidth=\"10\" markerHeight=\"10\" refX=\"9\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L0,6 L9,3 Z\" fill=\"#48dff0\"/></marker></defs>"
 svg_document project = node "svg" j5 attr "xmlns" "http://www.w3.org/2000/svg" attr "width" str ival project "width" 1280 attr "height" str ival project "height" 720 attr "viewBox" j4 "0 0 " str ival project "width" 1280 " " str ival project "height" 720 attr "role" "img" j3 arrow_def _ render_scenes field project "scenes" max 1 ival project "fps" 30 ival project "width" 1280 ival project "height" 720 0 0 "" ""
 
-project = json fsread environ "AIN_VIDEO_SPEC"
-fswrite environ "AIN_VIDEO_PREVIEW" svg_document project
-print concat "Created animated SVG: " environ "AIN_VIDEO_PREVIEW"
+project = json fsread environ "BABEL_VIDEO_SPEC"
+fswrite environ "BABEL_VIDEO_PREVIEW" svg_document project
+print concat "Created animated SVG: " environ "BABEL_VIDEO_PREVIEW"
