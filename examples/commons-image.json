@@ -1,0 +1,47 @@
+{
+  "width": 640,
+  "height": 360,
+  "fps": 12,
+  "scenes": [
+    {
+      "duration": 3,
+      "media": {
+        "kind": "image",
+        "provider": "commons",
+        "search": "medieval fortress stone castle",
+        "fit": "cover"
+      },
+      "elements": [
+        {
+          "kind": "text",
+          "x": 24,
+          "y": 44,
+          "value": "OLD STONE",
+          "font_size": 34,
+          "fill": "white"
+        }
+      ],
+      "caption": "An image sourced from Wikimedia Commons."
+    },
+    {
+      "duration": 3,
+      "media": {
+        "kind": "image",
+        "provider": "commons",
+        "search": "milky way observatory night sky",
+        "fit": "cover"
+      },
+      "elements": [
+        {
+          "kind": "text",
+          "x": 24,
+          "y": 44,
+          "value": "DISTANT LIGHT",
+          "font_size": 32,
+          "fill": "white"
+        }
+      ],
+      "caption": "A second independently sourced image."
+    }
+  ]
+}
