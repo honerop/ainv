@@ -1,4 +1,4 @@
-# Animated SVG integration check, written in Ain.
+# Animated SVG integration check, written in Babel.
 require valid = / 1 if valid 1 0
 markup = fsread "showcase.svg"
 print require starts markup "<svg "

@@ -1,17 +1,17 @@
 # AinV
 
-**AinV is a general-purpose, JSON-driven video generator written in Ain.** Build
+**AinV is a general-purpose, JSON-driven video generator written in Babel.** Build
 narrated explainers, motion graphics, image slideshows, social clips, tutorials,
 montages, and diagrams from the same timeline. Mathematical plotting is only
 one available drawing element. AinV is not a mathematics-only tool.
 
-Nix supplies the Ain compiler, media decoders/encoders, and narration engines.
-All video application logic stays in `director.ain`.
+Nix supplies the Babel compiler, media decoders/encoders, and narration engines.
+All video application logic stays in `director.babel`.
 
 ## Start
 
 ```sh
-# Builds the Ain video engine and renders a general motion-graphics showcase
+# Builds the Babel video engine and renders a general motion-graphics showcase
 nix run github:honerop/ainv
 
 # Use your own JSON project
@@ -104,7 +104,7 @@ Numeric properties can animate with `from`/`to` and
 JSON video project
         |
         v
-Ain: project timeline, asset paths, graphics, scene durations, speech scheduling
+Babel: project timeline, asset paths, graphics, scene durations, speech scheduling
         |                    |                       |
         |                    |                       +--> Edge TTS / espeak-ng
         |                    +--> SVG overlays --> librsvg rasterization
@@ -112,22 +112,27 @@ Ain: project timeline, asset paths, graphics, scene durations, speech scheduling
                                        |
                                 FFmpeg video composition
                                        |
-                             Ain: voice / audio / music mixing
+                             Babel: voice / audio / music mixing
                                        |
                                    MP4 + SRT
 ```
 
-The application is written in Ain. External tools (FFmpeg, librsvg,
+The application is written in Babel. External tools (FFmpeg, librsvg,
 Edge TTS and espeak-ng) are dependency executables, not application code.
-The Ain compiler itself is implemented using Rust.
+The Babel compiler itself is implemented using Rust.
 
 ## Development
+
+The old `flake.lock` pointed at a pre-rename Ain compiler commit. It has been
+removed for the migration. Run `nix flake lock` to generate a fresh Babel lock
+before pinning a release or building offline.
+
 
 ```sh
 git clone https://github.com/honerop/ainv
 cd ainv
 nix develop
-ainc check director.ain
+babelc check director.babel
 nix flake check -L
 ```
 

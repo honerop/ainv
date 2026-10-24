@@ -1,10 +1,10 @@
 {
-  description = "AinV: Ain-authored general video timeline and MP4 media compositor";
+  description = "AinV: Babel-authored general video timeline and MP4 media compositor";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-  inputs.ain.url = "github:honerop/ain";
+  inputs.babel.url = "github:honerop/babel";
 
-  outputs = { self, nixpkgs, ain }:
+  outputs = { self, nixpkgs, babel }:
     let
       systems = [ "x86_64-linux" "aarch64-linux" ];
       eachSystem = nixpkgs.lib.genAttrs systems;
@@ -13,20 +13,20 @@
       compilerFor = system:
         let pkgs = pkgsFor system;
         in pkgs.stdenv.mkDerivation {
-          pname = "ainc";
-          version = "0.3.0";
-          src = ain;
+          pname = "babelc";
+          version = "0.3.1";
+          src = babel;
           nativeBuildInputs = [ pkgs.rustc ];
           dontConfigure = true;
           buildPhase = ''
             runHook preBuild
-            rustc --edition=2021 --crate-name ain_compiler --crate-type rlib -O src/lib.rs -o libain_compiler.rlib
-            rustc --edition=2021 -O src/main.rs --extern ain_compiler=libain_compiler.rlib -L dependency=. -o ainc
+            rustc --edition=2021 --crate-name babel_compiler --crate-type rlib -O src/lib.rs -o libbabel_compiler.rlib
+            rustc --edition=2021 -O src/main.rs --extern babel_compiler=libbabel_compiler.rlib -L dependency=. -o babelc
             runHook postBuild
           '';
           installPhase = ''
             mkdir -p "$out/bin"
-            cp ainc "$out/bin/ainc"
+            cp babelc "$out/bin/babelc"
           '';
         };
 
@@ -42,8 +42,8 @@
           nativeBuildInputs = [ compiler pkgs.rustc ];
           buildPhase = ''
             runHook preBuild
-            ${compiler}/bin/ainc check director.ain
-            ${compiler}/bin/ainc build director.ain -o ainv
+            ${compiler}/bin/babelc check director.babel
+            ${compiler}/bin/babelc build director.babel -o ainv
             runHook postBuild
           '';
           installPhase = ''
@@ -69,7 +69,7 @@
           export AINV_RSVG="${pkgs.librsvg}/bin/rsvg-convert"
           export AINV_DIRNAME="${pkgs.coreutils}/bin/dirname"
           export FONTCONFIG_FILE="${fonts}"
-          export AIN_PROCESS_TIMEOUT_MS=1800000
+          export BABEL_PROCESS_TIMEOUT_MS=1800000
           export AINV_WORK="$(mktemp -d)"
           trap 'rm -rf "$AINV_WORK"' EXIT
           "${director}/bin/ainv-director" "$@"
@@ -94,11 +94,11 @@
           director = directorFor system;
           app = appFor system;
         in {
-          ain-director = director;
+          babel-director = director;
           smoke = pkgs.runCommand "ainv-smoke" { } ''
             mkdir -p "$out"
             cd "$out"
-            "${app}/bin/ainv" "${./examples/ain-smoke.json}" "smoke.mp4"
+            "${app}/bin/ainv" "${./examples/babel-smoke.json}" "smoke.mp4"
             test -s smoke.mp4
             test -s smoke.srt
             ${pkgs.ffmpeg}/bin/ffprobe -v error -show_entries stream=codec_name,width,height -of json smoke.mp4 > info.json

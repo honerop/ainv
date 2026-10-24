@@ -1,4 +1,4 @@
-name: Ain Nix native build
+name: Babel Nix native build
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
     paths:
       - flake.nix
       - flake.lock
-      - director.ain
+      - director.babel
       - .github/workflows/ain-nix.yml
   workflow_dispatch:
 
@@ -16,9 +16,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@v17
-      - name: Resolve Ain compiler input
+      - name: Resolve Babel compiler input
         run: |
           nix flake lock
           cat flake.lock
-      - name: Compile Ain and render offline smoke MP4
+      - name: Compile Babel and render offline smoke MP4
         run: nix flake check -L

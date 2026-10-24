@@ -2,7 +2,7 @@
 # External tools only encode H.264/AAC, rasterize SVG, and provide Edge speech.
 
 sv o k d = if hasfield o k astext field o k d
-# JSON numbers may be fractional; Ain asint only accepts canonical integers.
+# JSON numbers may be fractional; Babel asint only accepts canonical integers.
 # Convert numeric fields through their JSON spelling before any frame renders.
 iv o k d = if hasfield o k num before encode field o k "." d
 j3 a b c = concat concat a b c

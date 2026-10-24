@@ -1,11 +1,11 @@
-name: Render full Ain showcase MP4
+name: Render full Babel showcase MP4
 
 on:
   workflow_dispatch:
   push:
     branches: [main]
     paths:
-      - director.ain
+      - director.babel
       - examples/math-explainer.json
       - .github/workflows/render-showcase.yml
 
@@ -16,14 +16,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@v17
-      - name: Render narrated mathematical explainer through Ain
+      - name: Render narrated mathematical explainer through Babel
         run: nix run .
       - name: Verify narrated MP4 and subtitle output
         run: |
           test -s showcase.mp4
           test -s showcase.srt
           file showcase.mp4 | grep -qi 'ISO Media'
-      - name: Upload completed Ain-generated video
+      - name: Upload completed Babel-generated video
         uses: actions/upload-artifact@v4
         with:
           name: ainv-showcase-narrated-mp4
