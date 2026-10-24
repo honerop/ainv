@@ -142,5 +142,43 @@ class TestAssetAdapter(unittest.TestCase):
                 assets.prepare(original, root / "out.json")
 
 
+    def test_public_domain_filter(self):
+        self.assertTrue(assets.is_public_domain({"license": "CC0 1.0"}))
+        self.assertTrue(assets.is_public_domain({"license": "PD-old"}))
+        self.assertFalse(assets.is_public_domain({"license": "CC BY-SA 4.0"}))
+        self.assertFalse(assets.is_public_domain({"license": "Unknown"}))
+
+    def test_result_selection_and_cache_key(self):
+        with tempfile.TemporaryDirectory() as td:
+            options = [
+                {"title": "File:Licensed.jpg", "license": "CC BY-SA 4.0",
+                 "download_url": "https://upload.wikimedia.org/one.jpg"},
+                {"title": "File:Public domain.jpg", "license": "CC0",
+                 "download_url": "https://upload.wikimedia.org/two.jpg"},
+            ]
+            calls = []
+            def fake_download(url, dest):
+                calls.append(url)
+                f = dest.with_suffix(".jpg")
+                f.write_bytes(b"\\xff\\xd8\\xffdummy")
+                return f
+            with patch.object(assets, "search_images", return_value=options):
+                with patch.object(assets, "_download_image", side_effect=fake_download):
+                    a, ameta = assets.fetch_image("castle", cache_dir=td, result=1)
+                    b, bmeta = assets.fetch_image("castle", cache_dir=td, license="public-domain")
+            self.assertEqual(ameta["title"], "File:Public domain.jpg")
+            self.assertEqual(bmeta["title"], "File:Public domain.jpg")
+            self.assertEqual(len(calls), 2)
+            self.assertNotEqual(a, b)
+
+    def test_invalid_result_and_filter_fail_before_network(self):
+        with tempfile.TemporaryDirectory() as td:
+            with self.assertRaises(assets.AssetError):
+                assets.fetch_image("castle", cache_dir=td, result=-1)
+            with self.assertRaises(assets.AssetError):
+                assets.fetch_image("castle", cache_dir=td, license="restricted")
+
+
+
 if __name__ == "__main__":
     unittest.main()
