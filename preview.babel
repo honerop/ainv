@@ -1,4 +1,4 @@
-# AINV animated SVG director.
+# EIDOLON animated SVG director.
 # All vector graphics, timelines, easing, scenes, and SVG serialization are Babel.
 # No Python, FFmpeg, browser automation, or changes to the Babel compiler.
 # Usage: BABEL_VIDEO_SPEC=examples/showcase.json BABEL_VIDEO_PREVIEW=showcase.svg babelc run preview.babel
@@ -40,7 +40,7 @@ bg scene width height = empty "rect" j5 nattr "x" 0 nattr "y" 0 nattr "width" wi
 rectangle shape begin duration = node "rect" j5 nattr "x" initial shape "x" nattr "y" initial shape "y" nattr "width" initial shape "width" nattr "height" initial shape "height" concat paint shape nattr "rx" ival shape "radius" 0 geom shape "x,y,width,height" begin duration
 round_shape shape begin duration = node "circle" j4 nattr "cx" initial shape "cx" nattr "cy" initial shape "cy" nattr "r" initial shape "r" paint shape geom shape "cx,cy,r" begin duration
 line_shape shape begin duration = node "line" j5 nattr "x1" initial shape "x1" nattr "y1" initial shape "y1" nattr "x2" initial shape "x2" nattr "y2" initial shape "y2" stroke shape geom shape "x1,y1,x2,y2" begin duration
-arrow_shape shape begin duration = node "line" j5 nattr "x1" initial shape "x1" nattr "y1" initial shape "y1" nattr "x2" initial shape "x2" nattr "y2" initial shape "y2" concat stroke shape " marker-end=\"url(#ainv-arrow)\"" geom shape "x1,y1,x2,y2" begin duration
+arrow_shape shape begin duration = node "line" j5 nattr "x1" initial shape "x1" nattr "y1" initial shape "y1" nattr "x2" initial shape "x2" nattr "y2" initial shape "y2" concat stroke shape " marker-end=\"url(#eidolon-arrow)\"" geom shape "x1,y1,x2,y2" begin duration
 
 # Unicode text, including mathematical symbols, renders using system fonts.
 text_shape shape begin duration = node "text" j5 nattr "x" initial shape "x" nattr "y" initial shape "y" nattr "font-size" ival shape "font_size" 42 attr "text-anchor" anchor sval shape "anchor" "start" concat attr "fill" palette sval shape "fill" "white" attr "font-weight" weight sval shape "weight" "normal" j3 esc sval shape "value" "" geom shape "x,y" begin duration ""
@@ -57,7 +57,7 @@ scene_millis scene fps = / * span scene fps 1000 fps
 scene_svg scene begin fps width height = node "g" " opacity=\"0\"" concat empty "set" j4 attr "attributeName" "opacity" attr "to" "1" attr "begin" seconds begin concat attr "dur" seconds scene_millis scene fps " fill=\"remove\"" j3 bg scene width height shapes_svg field scene "elements" begin scene_millis scene fps 0 "" ""
 render_scenes scenes fps width height index begin output = if >= index size scenes output render_scenes scenes fps width height + index 1 + begin scene_millis get scenes index fps concat output scene_svg get scenes index begin fps width height
 
-arrow_def _ = "<defs><marker id=\"ainv-arrow\" markerWidth=\"10\" markerHeight=\"10\" refX=\"9\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L0,6 L9,3 Z\" fill=\"#48dff0\"/></marker></defs>"
+arrow_def _ = "<defs><marker id=\"eidolon-arrow\" markerWidth=\"10\" markerHeight=\"10\" refX=\"9\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L0,6 L9,3 Z\" fill=\"#48dff0\"/></marker></defs>"
 svg_document project = node "svg" j5 attr "xmlns" "http://www.w3.org/2000/svg" attr "width" str ival project "width" 1280 attr "height" str ival project "height" 720 attr "viewBox" j4 "0 0 " str ival project "width" 1280 " " str ival project "height" 720 attr "role" "img" j3 arrow_def _ render_scenes field project "scenes" max 1 ival project "fps" 30 ival project "width" 1280 ival project "height" 720 0 0 "" ""
 
 project = json fsread environ "BABEL_VIDEO_SPEC"

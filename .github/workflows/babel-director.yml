@@ -13,7 +13,7 @@ jobs:
   ain-video:
     runs-on: ubuntu-latest
     env:
-      AINV_DIRNAME: /usr/bin/dirname
+      EIDOLON_DIRNAME: /usr/bin/dirname
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -22,19 +22,19 @@ jobs:
       - name: Check that director is valid Babel
         run: cargo run --quiet --manifest-path /tmp/babel/Cargo.toml -- check director.babel
       - name: Build Babel application
-        run: cargo run --quiet --manifest-path /tmp/babel/Cargo.toml -- build director.babel -o /tmp/ainv
+        run: cargo run --quiet --manifest-path /tmp/babel/Cargo.toml -- build director.babel -o /tmp/eidolon
       - name: Install external video and graphics codecs
         run: sudo apt-get update && sudo apt-get install -y ffmpeg librsvg2-bin fonts-dejavu-core espeak-ng
       - name: Render a real 3-frame MP4 with Babel
         run: |
           set -euo pipefail
-          export AINV_WORK="$(mktemp -d)"
-          export AINV_RSVG="$(command -v rsvg-convert)"
-          export AINV_FFMPEG="$(command -v ffmpeg)"
-          export AINV_FFPROBE="$(command -v ffprobe)"
-          export AINV_EDGE_TTS=/bin/false
+          export EIDOLON_WORK="$(mktemp -d)"
+          export EIDOLON_RSVG="$(command -v rsvg-convert)"
+          export EIDOLON_FFMPEG="$(command -v ffmpeg)"
+          export EIDOLON_FFPROBE="$(command -v ffprobe)"
+          export EIDOLON_EDGE_TTS=/bin/false
           export BABEL_PROCESS_TIMEOUT_MS=180000
-          /tmp/ainv examples/babel-smoke.json smoke-babel.mp4
+          /tmp/eidolon examples/babel-smoke.json smoke-babel.mp4
           test -s smoke-babel.mp4
           ffprobe -v error -show_entries stream=codec_name,width,height -of json smoke-babel.mp4
           test -s smoke-babel.srt
@@ -57,27 +57,27 @@ jobs:
           ffmpeg -hide_banner -loglevel error -y -f lavfi -i "sine=frequency=440:duration=1.2" "$output"
           EOF
           chmod +x /tmp/mock-edge-tts
-          export AINV_WORK="$(mktemp -d)"
-          export AINV_RSVG="$(command -v rsvg-convert)"
-          export AINV_FFMPEG="$(command -v ffmpeg)"
-          export AINV_FFPROBE="$(command -v ffprobe)"
-          export AINV_EDGE_TTS=/tmp/mock-edge-tts
+          export EIDOLON_WORK="$(mktemp -d)"
+          export EIDOLON_RSVG="$(command -v rsvg-convert)"
+          export EIDOLON_FFMPEG="$(command -v ffmpeg)"
+          export EIDOLON_FFPROBE="$(command -v ffprobe)"
+          export EIDOLON_EDGE_TTS=/tmp/mock-edge-tts
           export BABEL_PROCESS_TIMEOUT_MS=180000
-          /tmp/ainv examples/babel-voice-smoke.json voice-smoke.mp4
+          /tmp/eidolon examples/babel-voice-smoke.json voice-smoke.mp4
           test -s voice-smoke.mp4
           test -s voice-smoke.srt
           ffprobe -v error -show_entries stream=codec_type -of csv=p=0 voice-smoke.mp4 | grep -qx audio
       - name: Verify Babel offline speech fallback when Edge is blocked
         run: |
           set -euo pipefail
-          export AINV_WORK="$(mktemp -d)"
-          export AINV_RSVG="$(command -v rsvg-convert)"
-          export AINV_FFMPEG="$(command -v ffmpeg)"
-          export AINV_FFPROBE="$(command -v ffprobe)"
-          export AINV_EDGE_TTS=/bin/false
-          export AINV_ESPEAK="$(command -v espeak-ng)"
+          export EIDOLON_WORK="$(mktemp -d)"
+          export EIDOLON_RSVG="$(command -v rsvg-convert)"
+          export EIDOLON_FFMPEG="$(command -v ffmpeg)"
+          export EIDOLON_FFPROBE="$(command -v ffprobe)"
+          export EIDOLON_EDGE_TTS=/bin/false
+          export EIDOLON_ESPEAK="$(command -v espeak-ng)"
           export BABEL_PROCESS_TIMEOUT_MS=180000
-          /tmp/ainv examples/babel-voice-smoke.json fallback.mp4
+          /tmp/eidolon examples/babel-voice-smoke.json fallback.mp4
           test -s fallback.mp4
           ffprobe -v error -show_entries stream=codec_type -of csv=p=0 fallback.mp4 | grep -qx audio
       - name: Generate general-purpose photo, footage, voice, and music fixtures
@@ -91,14 +91,14 @@ jobs:
       - name: Render image and video montage with audio and music using Babel
         run: |
           set -euo pipefail
-          export AINV_WORK="$(mktemp -d)"
-          export AINV_RSVG="$(command -v rsvg-convert)"
-          export AINV_FFMPEG="$(command -v ffmpeg)"
-          export AINV_FFPROBE="$(command -v ffprobe)"
-          export AINV_EDGE_TTS=/bin/false
-          export AINV_ESPEAK="$(command -v espeak-ng)"
+          export EIDOLON_WORK="$(mktemp -d)"
+          export EIDOLON_RSVG="$(command -v rsvg-convert)"
+          export EIDOLON_FFMPEG="$(command -v ffmpeg)"
+          export EIDOLON_FFPROBE="$(command -v ffprobe)"
+          export EIDOLON_EDGE_TTS=/bin/false
+          export EIDOLON_ESPEAK="$(command -v espeak-ng)"
           export BABEL_PROCESS_TIMEOUT_MS=180000
-          /tmp/ainv examples/general-media-smoke.json montage.mp4
+          /tmp/eidolon examples/general-media-smoke.json montage.mp4
           test -s montage.mp4
           test -s montage.srt
           ffprobe -v error -show_entries stream=codec_type -of csv=p=0 montage.mp4 | grep -qx audio
@@ -106,19 +106,19 @@ jobs:
       - name: Render reduced-size default general showcase and decimal math showcase
         run: |
           set -euo pipefail
-          export AINV_WORK="$(mktemp -d)"
-          export AINV_RSVG="$(command -v rsvg-convert)"
-          export AINV_FFMPEG="$(command -v ffmpeg)"
-          export AINV_FFPROBE="$(command -v ffprobe)"
-          export AINV_EDGE_TTS=/bin/false
-          export AINV_ESPEAK="$(command -v espeak-ng)"
-          export AINV_SKIP_TTS=1
+          export EIDOLON_WORK="$(mktemp -d)"
+          export EIDOLON_RSVG="$(command -v rsvg-convert)"
+          export EIDOLON_FFMPEG="$(command -v ffmpeg)"
+          export EIDOLON_FFPROBE="$(command -v ffprobe)"
+          export EIDOLON_EDGE_TTS=/bin/false
+          export EIDOLON_ESPEAK="$(command -v espeak-ng)"
+          export EIDOLON_SKIP_TTS=1
           export BABEL_PROCESS_TIMEOUT_MS=180000
           jq '.width=160 | .height=96 | .fps=5 | .scenes |= map(.frames=15 | del(.narration))' examples/general-showcase.json > examples/general-short-regression.json
           jq '.width=160 | .height=96 | .fps=5 | .scenes |= map(.frames=15 | del(.narration))' examples/math-explainer.json > examples/math-short-regression.json
-          /tmp/ainv examples/general-short-regression.json general-short.mp4
+          /tmp/eidolon examples/general-short-regression.json general-short.mp4
           test -s general-short.mp4
-          rm -rf "$AINV_WORK"
-          export AINV_WORK="$(mktemp -d)"
-          /tmp/ainv examples/math-short-regression.json math-short.mp4
+          rm -rf "$EIDOLON_WORK"
+          export EIDOLON_WORK="$(mktemp -d)"
+          /tmp/eidolon examples/math-short-regression.json math-short.mp4
           test -s math-short.mp4
