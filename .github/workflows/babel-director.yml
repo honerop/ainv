@@ -103,6 +103,33 @@ jobs:
           test -s montage.srt
           ffprobe -v error -show_entries stream=codec_type -of csv=p=0 montage.mp4 | grep -qx audio
           ffprobe -v error -show_entries stream=width,height -of csv=p=0 montage.mp4 | grep -qx '160,96'
+      - name: Check image motion (Ken Burns) in rendered MP4
+        run: |
+          set -euo pipefail
+          mkdir -p examples/fixtures
+          test -s examples/fixtures/still.png
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          scenes = []
+          for motion in ("zoom-in", "zoom-out", "pan-left", "pan-right"):
+              scenes.append({"frames": 4, "media": {
+                  "kind": "image", "src": "still.png", "motion": motion, "fit": "cover"
+              }})
+          Path("examples/fixtures/motion-smoke.json").write_text(json.dumps({
+              "width": 160, "height": 96, "fps": 4, "scenes": scenes
+          }))
+          PY
+          export EIDOLON_WORK="$(mktemp -d)"
+          export EIDOLON_RSVG="$(command -v rsvg-convert)"
+          export EIDOLON_FFMPEG="$(command -v ffmpeg)"
+          export EIDOLON_FFPROBE="$(command -v ffprobe)"
+          export EIDOLON_EDGE_TTS=/bin/false
+          export EIDOLON_SKIP_TTS=1
+          export BABEL_PROCESS_TIMEOUT_MS=180000
+          /tmp/eidolon examples/fixtures/motion-smoke.json motion-smoke.mp4
+          test -s motion-smoke.mp4
+          ffprobe -v error -show_entries stream=codec_type -of csv=p=0 motion-smoke.mp4 | grep -qx video
       - name: Render reduced-size default general showcase and decimal math showcase
         run: |
           set -euo pipefail
