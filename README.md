@@ -5,25 +5,69 @@ narrated explainers, motion graphics, image slideshows, social clips, tutorials,
 montages, and diagrams from the same timeline. Mathematical plotting is only
 one available drawing element. Eidolon is not a mathematics-only tool.
 
-Nix supplies the Babel compiler, media decoders/encoders, and narration engines.
-All video application logic stays in `director.babel`.
+Nix supplies the Babel compiler, media decoders/encoders, narration engines, and a keyless Commons image adapter.
+The renderer and timeline remain in `director.babel`; HTTP image downloads and license metadata are handled by `tools/media_assets.py`.
 
 ## Start
 
 ```sh
 # Builds the Babel video engine and renders a general motion-graphics showcase
-nix run github:honerop/ainv
+nix run github:honerop/eidolon
 
 # Use your own JSON project
-nix run github:honerop/ainv -- ./project.json ./movie.mp4
+nix run github:honerop/eidolon -- ./project.json ./movie.mp4
 
 # Render without neural or offline narration
-EIDOLON_SKIP_TTS=1 nix run github:honerop/ainv -- ./project.json ./movie.mp4
+EIDOLON_SKIP_TTS=1 nix run github:honerop/eidolon -- ./project.json ./movie.mp4
 ```
 
 Output is H.264 MP4 plus a separate SRT subtitle file. Narration uses Edge TTS
 when available and falls back to bundled offline espeak-ng if Edge fails.
 Only the Edge provider needs an internet connection.
+
+## Keyless image sourcing (Wikimedia Commons)
+
+Eidolon can find real, freely licensed images without API keys. Add `media.search` to any scene to use Wikimedia Commons as a background:
+
+```json
+{
+  "width": 640,
+  "height": 360,
+  "fps": 12,
+  "scenes": [
+    {
+      "duration": 4,
+      "media": {
+        "kind": "image",
+        "provider": "commons",
+        "search": "old medieval stone fortress",
+        "fit": "cover"
+      },
+      "narration": "An ancient fortress, built to last."
+    }
+  ]
+}
+```
+
+The normal `nix run github:honerop/eidolon -- ./video.json ./movie.mp4` command resolves searches automatically before the Babel director renders. The built-in adapter uses the public Wikimedia Commons API, chooses a compatible image, downloads a scaled copy (up to about 1600 pixels wide) and caches it under `~/.cache/eidolon/images` (or `$XDG_CACHE_HOME/eidolon/images`). Subsequent identical queries reuse cached files. With `EIDOLON_OFFLINE=1`, only cached images may be used.
+
+Search and fetch images independently:
+
+```sh
+# Returns JSON including file title, creator, license and source URL
+nix run github:honerop/eidolon -- images search "medieval fortress" --limit 5
+
+# Caches an image; optionally copies it and its metadata to a local directory
+nix run github:honerop/eidolon -- images fetch "old castle" --output ./assets/
+
+# Render the included keyless example (network needed on first render)
+nix run github:honerop/eidolon -- ./examples/commons-image.json ./commons.mp4
+```
+
+When a project uses Commons images, Eidolon writes `movie.attribution.json` beside `movie.mp4`. This records each image's Commons file page, author, license and license URL. Check those terms and include required attribution wherever you publish the video. A free API does **not** mean every image is public domain. The adapter identifies itself to Wikimedia with a User-Agent, uses bounded downloads, and gives clear errors when search, licensing metadata or the network fails.
+
+**Scope:** These are existing photographs/illustrations, not AI-generated images. No token or subscription is needed. It does not use third-party sites that need hidden API keys. Search results may vary until cached, and the public API can rate-limit or become unavailable. Private image generation and other providers can be separate future adapters. Babel still controls the video timeline, graphics and audio; the small Python standard-library adapter only handles HTTP image bytes and their metadata.
+
 
 ## Video project format
 
@@ -123,19 +167,13 @@ The Babel compiler itself is implemented using Rust.
 
 ## Development
 
-**GitHub repository name:** Eidolon is the application name. GitHub still hosts it
-at `honerop/ainv` until the owner changes the repository name under
-**Settings → General → Repository name** to `eidolon`. After that, use
-`nix run github:honerop/eidolon` (the old URL should redirect).
-
-
 The Nix lock is pinned to Babel v0.3.1, rather than the old Ain compiler.
 Run `nix flake update babel` when intentionally updating the compiler.
 
 
 ```sh
-git clone https://github.com/honerop/ainv
-cd ainv  # directory name until the GitHub repository is renamed
+git clone https://github.com/honerop/eidolon
+cd eidolon
 nix develop
 babelc check director.babel
 nix flake check -L
