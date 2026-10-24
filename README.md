@@ -69,6 +69,55 @@ When a project uses Commons images, Eidolon writes `movie.attribution.json` besi
 **Scope:** These are existing photographs/illustrations, not AI-generated images. No token or subscription is needed. It does not use third-party sites that need hidden API keys. Search results may vary until cached, and the public API can rate-limit or become unavailable. Private image generation and other providers can be separate future adapters. Babel still controls the video timeline, graphics and audio; the small Python standard-library adapter only handles HTTP image bytes and their metadata.
 
 
+## Storyboard inspection and ready-made video formats
+
+You can inspect a JSON project **without downloading anything or rendering**:
+
+```sh
+nix run github:honerop/eidolon -- inspect ./video.json
+nix run github:honerop/eidolon -- inspect ./video.json --json
+```
+
+The inspector reports estimated scene start times, frame totals, size and frame rate, local file availability, and errors such as invalid image motion, missing assets and unsupported search settings. The `--json` output is designed for scripts and agents. It returns a nonzero exit code for errors, without attempting any network access. Actual duration may increase to accommodate spoken narration or audio.
+
+Generate a starter project in one of three video layouts:
+
+```sh
+nix run github:honerop/eidolon -- init ./landscape.json --preset landscape
+nix run github:honerop/eidolon -- init ./short.json --preset vertical
+nix run github:honerop/eidolon -- init ./square.json --preset square
+```
+
+The presets use 1280×720, 720×1280 and 1080×1080 at 30 FPS respectively. Init does not overwrite an existing project.
+
+## Image motion and search controls
+
+Still images can animate with **Ken Burns** movement. The image background moves independently of animated vector overlays.
+
+```json
+{
+  "duration": 5,
+  "media": {
+    "kind": "image",
+    "search": "ancient mountains",
+    "provider": "commons",
+    "result": 0,
+    "license": "public-domain",
+    "motion": "zoom-in",
+    "fit": "cover"
+  }
+}
+```
+
+Allowed image motions: `zoom-in`, `zoom-out`, `pan-left`, `pan-right`, `none` (default). Image motion works with local photographs and Commons searches; motion on video clips is invalid. The renderer applies the movement within each scene via FFmpeg's `zoompan` filter.
+
+Use `result` (zero-based, 0–14) to choose a different matching image rather than always taking the first one. The `license` filter can be `any` (default) or `public-domain` (only known CC0/public-domain Commons results). This is a metadata filter, **not a legal guarantee**. Review the Commons file page before redistribution.
+
+```sh
+nix run github:honerop/eidolon -- images fetch "ancient stone fort" --result 2
+nix run github:honerop/eidolon -- images fetch "ancient stone fort" --license public-domain
+```
+
 ## Video project format
 
 ```json
