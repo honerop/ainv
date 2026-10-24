@@ -45,7 +45,10 @@ seen_media value scene = boxbool or asbool value scene_has_media scene
 media_fit_base scene = j6 "scale=" str video_width _ ":" str video_height _ ":force_original_aspect_ratio=" if == sv media_info scene "fit" "cover" "contain" "decrease" "increase"
 media_cover scene = concat media_fit_base scene j5 ",crop=" str video_width _ ":" str video_height _ ",setsar=1"
 media_contain scene = concat media_fit_base scene j6 ",pad=" str video_width _ ":" str video_height _ ":(ow-iw)/2:(oh-ih)/2:color=black" ",setsar=1"
-media_filter scene = concat if == media_kind scene "video" j3 "fps=" str video_fps _ "," "" if == sv media_info scene "fit" "cover" "contain" media_contain scene media_cover scene
+motion_base scene = concat if == sv media_info scene "motion" "none" "zoom-in" "min(pzoom+0.002,1.18)" if == sv media_info scene "motion" "none" "zoom-out" "max(1.18-on*0.002,1.0)" "1.12"
+motion_x scene = if == sv media_info scene "motion" "none" "pan-left" j3 "(iw-iw/zoom)*(1-on/" str max 1 - iv scene "frames" 1 1 ")" if == sv media_info scene "motion" "none" "pan-right" j3 "(iw-iw/zoom)*on/" str max 1 - iv scene "frames" 1 1 "" "iw/2-(iw/zoom/2)"
+motion_filter scene = if == media_kind scene "video" "" if == sv media_info scene "motion" "none" "none" "" j6 ",zoompan=z='" motion_base scene "':x='" motion_x scene "':y='ih/2-(ih/zoom/2)':d=1:s=" j5 str video_width _ "x" str video_height _ ":fps=" str video_fps _
+media_filter scene = concat concat if == media_kind scene "video" j3 "fps=" str video_fps _ "," "" if == sv media_info scene "fit" "cover" "contain" media_contain scene media_cover scene motion_filter scene
 media_input scene = if == media_kind scene "image" pair_arg pair_arg pair_arg ffstart _ "-loop" "1" "-framerate" str video_fps _ "-i" media_source scene pair_arg pair_arg ffstart _ "-stream_loop" "-1" "-i" media_source scene
 media_renderargs scene = ap pair_arg pair_arg pair_arg media_input scene "-vf" media_filter scene "-frames:v" str iv scene "frames" 1 "-start_number" str iv scene "start_frame" 0 workpath "media-%06d.png"
 media_render scene = if scene_has_media scene ok processrun environ "EIDOLON_FFMPEG" media_renderargs scene _
