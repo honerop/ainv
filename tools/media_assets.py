@@ -96,7 +96,7 @@ def search_images(query, limit=6):
         "iiurlwidth": 1600, "format": "json", "formatversion": 2,
     }
     result = _request_json(API + "?" + urlencode(params))
-    pages = result.get("query", {}).get("pages", [])
+    pages = sorted(result.get("query", {}).get("pages", []), key=lambda p: p.get("index", 0))
     found = []
     for page in pages:
         info = (page.get("imageinfo") or [{}])[0]
@@ -163,10 +163,20 @@ def _download_image(url, destination):
     return dest
 
 
-def fetch_image(query, cache_dir=None, offline=False):
+def is_public_domain(image):
+    license_name = image.get("license", "").lower().strip()
+    return (license_name in {"cc0", "cc0 1.0", "public domain", "public domain mark"}
+            or license_name.startswith(("pd-", "public domain ")))
+
+
+def fetch_image(query, cache_dir=None, offline=False, result=0, license="any"):
+    if not isinstance(result, int) or isinstance(result, bool) or not 0 <= result <= 14:
+        raise AssetError("Image result must be an integer from 0 to 14")
+    if license not in ("any", "public-domain"):
+        raise AssetError("Image license must be any or public-domain")
     cache = Path(cache_dir) if cache_dir else cache_root()
     cache.mkdir(parents=True, exist_ok=True)
-    key = hashlib.sha256(("commons-v1:" + query.strip()).encode("utf-8")).hexdigest()[:24]
+    key = hashlib.sha256(("commons-v2:" + query.strip() + ":" + str(result) + ":" + license).encode("utf-8")).hexdigest()[:24]
     stem = cache / ("commons-" + key)
     meta_path = stem.with_suffix(".json")
     if meta_path.is_file():
@@ -179,17 +189,19 @@ def fetch_image(query, cache_dir=None, offline=False):
             pass
     if offline or os.environ.get("EIDOLON_OFFLINE") == "1":
         raise AssetError("Image not cached and EIDOLON_OFFLINE=1: " + query)
-    images = search_images(query)
-    if not images:
-        raise AssetError("No usable Commons images found for: " + query)
+    images = search_images(query, limit=max(6, result + 1))
+    if license == "public-domain":
+        images = [i for i in images if is_public_domain(i)]
+    if not images or result >= len(images):
+        raise AssetError("No matching Commons image at selected result " + str(result) + " for: " + query)
     last_error = None
-    for image in images[:4]:
+    for image in images[result:result + 4]:
         try:
             path = _download_image(image["download_url"], stem)
         except AssetError as e:
             last_error = e
             continue
-        meta = {**image, "query": query, "local_path": str(path)}
+        meta = {**image, "query": query, "result": result, "license_filter": license, "local_path": str(path)}
         temp = meta_path.with_suffix(".tmp")
         temp.write_text(json.dumps(meta, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         os.replace(temp, meta_path)
@@ -230,11 +242,15 @@ def prepare(source, target, attribution_path=None, cache_dir=None):
                 raise AssetError("Unsupported image provider: " + str(media["provider"]))
             if media.get("kind", "image") != "image":
                 raise AssetError("media.search currently supports only image scenes")
-            path, meta = fetch_image(media["search"], cache_dir=cache_dir)
+            path, meta = fetch_image(
+                media["search"], cache_dir=cache_dir,
+                result=media.get("result", 0), license=media.get("license", "any"))
             media["kind"] = "image"
             media["src"] = str(path)
             media.pop("search", None)
             media.pop("provider", None)
+            media.pop("result", None)
+            media.pop("license", None)
             credits.append({"scene": index + 1, **{k: v for k, v in meta.items()
                             if k != "local_path"}})
         elif "src" in media:
@@ -261,12 +277,16 @@ def main(argv=None):
     fetch_cmd = commands.add_parser("fetch", help="Download and cache the best search result")
     fetch_cmd.add_argument("query")
     fetch_cmd.add_argument("--output", help="Copy the chosen image to this file or directory")
+    fetch_cmd.add_argument("--result", type=int, default=0,
+                           help="Zero-based result rank (0 to 14)")
+    fetch_cmd.add_argument("--license", choices=("any", "public-domain"), default="any",
+                           help="Optional public-domain-only filter")
     args = parser.parse_args(argv)
     try:
         if args.command == "search":
             print(json.dumps(search_images(args.query, args.limit), ensure_ascii=False, indent=2))
         elif args.command == "fetch":
-            path, meta = fetch_image(args.query)
+            path, meta = fetch_image(args.query, result=args.result, license=args.license)
             if args.output:
                 out = Path(args.output)
                 if out.is_dir() or str(args.output).endswith("/"):
