@@ -72,7 +72,17 @@
           export BABEL_PROCESS_TIMEOUT_MS=1800000
           export EIDOLON_WORK="$(mktemp -d)"
           trap 'rm -rf "$EIDOLON_WORK"' EXIT
-          "${director}/bin/eidolon-director" "$@"
+          if [ "''${1-}" = "images" ]; then
+            shift
+            exec "${python}/bin/python3" "${./tools/media_assets.py}" "$@"
+          fi
+          project="''${1:-$EIDOLON_DEFAULT_SPEC}"
+          output="''${2:-showcase.mp4}"
+          "${python}/bin/python3" "${./tools/media_assets.py}" prepare "$project" "$EIDOLON_WORK/project.json" --attribution "$EIDOLON_WORK/attribution.json"
+          "${director}/bin/eidolon-director" "$EIDOLON_WORK/project.json" "$output"
+          if [ -f "$EIDOLON_WORK/attribution.json" ]; then
+            cp "$EIDOLON_WORK/attribution.json" "''${output%.mp4}.attribution.json"
+          fi
         '';
     in {
       packages = eachSystem (system: {
@@ -95,6 +105,10 @@
           app = appFor system;
         in {
           babel-director = director;
+          assets = pkgs.runCommand "eidolon-assets-tests" { nativeBuildInputs = [ pkgs.python3 ]; } ''
+            ${pkgs.python3}/bin/python -m unittest discover -s ${./tests} -p 'test_media_assets.py' -v
+            touch "$out"
+          '';
           smoke = pkgs.runCommand "eidolon-smoke" { } ''
             mkdir -p "$out"
             cd "$out"
