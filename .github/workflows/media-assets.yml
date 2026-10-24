@@ -5,6 +5,8 @@ on:
     paths:
       - tools/media_assets.py
       - tests/test_media_assets.py
+      - tests/test_project_inspect.py
+      - tools/project_inspect.py
       - examples/commons-image.json
       - .github/workflows/media-assets.yml
       - flake.nix
@@ -20,6 +22,6 @@ jobs:
         with:
           python-version: '3.12'
       - name: Run offline Wikimedia Commons adapter tests
-        run: python -m unittest discover -s tests -p 'test_media_assets.py' -v
+        run: python -m unittest discover -s tests -p 'test_*.py' -v
       - name: Verify example JSON
         run: python -m json.tool examples/commons-image.json > /dev/null
