@@ -45,7 +45,10 @@ seen_media value scene = boxbool or asbool value scene_has_media scene
 media_fit_base scene = j6 "scale=" str video_width _ ":" str video_height _ ":force_original_aspect_ratio=" if == sv media_info scene "fit" "cover" "contain" "decrease" "increase"
 media_cover scene = concat media_fit_base scene j5 ",crop=" str video_width _ ":" str video_height _ ",setsar=1"
 media_contain scene = concat media_fit_base scene j6 ",pad=" str video_width _ ":" str video_height _ ":(ow-iw)/2:(oh-ih)/2:color=black" ",setsar=1"
-media_filter scene = concat if == media_kind scene "video" j3 "fps=" str video_fps _ "," "" if == sv media_info scene "fit" "cover" "contain" media_contain scene media_cover scene
+motion_base scene = if == sv media_info scene "motion" "none" "zoom-in" "min(pzoom+0.002,1.18)" if == sv media_info scene "motion" "none" "zoom-out" "max(1.18-on*0.002,1.0)" "1.12"
+motion_x scene = if == sv media_info scene "motion" "none" "pan-left" j3 "(iw-iw/zoom)*(1-on/" str max 1 - iv scene "frames" 1 1 ")" if == sv media_info scene "motion" "none" "pan-right" j3 "(iw-iw/zoom)*on/" str max 1 - iv scene "frames" 1 1 "" "iw/2-(iw/zoom/2)"
+motion_filter scene = if == media_kind scene "video" "" if == sv media_info scene "motion" "none" "none" "" j6 ",zoompan=z='" motion_base scene "':x='" motion_x scene "':y='ih/2-(ih/zoom/2)':d=1:s=" j5 str video_width _ "x" str video_height _ ":fps=" str video_fps _
+media_filter scene = concat concat if == media_kind scene "video" j3 "fps=" str video_fps _ "," "" if == sv media_info scene "fit" "cover" "contain" media_contain scene media_cover scene motion_filter scene
 media_input scene = if == media_kind scene "image" pair_arg pair_arg pair_arg ffstart _ "-loop" "1" "-framerate" str video_fps _ "-i" media_source scene pair_arg pair_arg ffstart _ "-stream_loop" "-1" "-i" media_source scene
 media_renderargs scene = ap pair_arg pair_arg pair_arg media_input scene "-vf" media_filter scene "-frames:v" str iv scene "frames" 1 "-start_number" str iv scene "start_frame" 0 workpath "media-%06d.png"
 media_render scene = if scene_has_media scene ok processrun environ "EIDOLON_FFMPEG" media_renderargs scene _
@@ -112,7 +115,7 @@ poly_points ps i result = if >= i size ps result poly_points ps + i 1 j3 result 
 poly_shape s = j4 "<polyline fill=\"none\" points=\"" poly_points field s "points" 0 "" concat "\"" stroke s "/>"
 shape_svg s frame total = if == sv s "kind" "" "rect" rect_shape s frame total if == sv s "kind" "" "circle" circle_shape s frame total if == sv s "kind" "" "line" line_shape s frame total if == sv s "kind" "" "arrow" line_shape s frame total if == sv s "kind" "" "text" text_shape s frame total if == sv s "kind" "" "axes" axes_shape s if == sv s "kind" "" "plot" plot_shape s frame total if == sv s "kind" "" "polyline" poly_shape s ""
 append_shape acc shape = put acc "svg" boxstr concat astext field acc "svg" shape_svg shape iv acc "local" 0 iv acc "total" 1
-scene_svg meta = astext field fold "append_shape" put put put record _ "svg" boxstr "" "local" field meta "local" "total" field field meta "scene" "frames" field field meta "scene" "elements" "svg"
+scene_svg meta = astext field fold "append_shape" put put put record _ "svg" boxstr "" "local" field meta "local" "total" field field meta "scene" "frames" if hasfield field meta "scene" "elements" field field meta "scene" "elements" array _ "svg"
 svg_bg meta = if scene_has_media field meta "scene" "" j4 "<rect width=\"100%\" height=\"100%\" fill=\"" palette sv field meta "scene" "background" "ink" "\"/>" ""
 svg_at meta = j6 "<svg xmlns=\"http://www.w3.org/2000/svg\"" nat "width" iv meta "width" 1280 nat "height" iv meta "height" 720 ">" "<defs><marker id=\"ain-arrow\" markerWidth=\"10\" markerHeight=\"10\" refX=\"9\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L0,6 L9,3 Z\" fill=\"#48dff0\"/></marker></defs>" j3 svg_bg meta scene_svg meta "</svg>"
 write_frame meta = fswrite svgfile iv meta "index" 0 svg_at meta
