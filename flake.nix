@@ -77,6 +77,10 @@
             "${python}/bin/python3" "${./tools/media_assets.py}" "$@"
             exit 0
           fi
+          if [ "''${1-}" = "inspect" ] || [ "''${1-}" = "init" ]; then
+            "${python}/bin/python3" "${./tools/project_inspect.py}" "$@"
+            exit 0
+          fi
           project="''${1:-$EIDOLON_DEFAULT_SPEC}"
           output="''${2:-showcase.mp4}"
           "${python}/bin/python3" "${./tools/media_assets.py}" prepare "$project" "$EIDOLON_WORK/project.json" --attribution "$EIDOLON_WORK/attribution.json"
@@ -108,7 +112,7 @@
           babel-director = director;
           assets = pkgs.runCommand "eidolon-assets-tests" { nativeBuildInputs = [ pkgs.python3 ]; } ''
             cd ${./.}
-            ${pkgs.python3}/bin/python -m unittest discover -s tests -p 'test_media_assets.py' -v
+            ${pkgs.python3}/bin/python -m unittest discover -s tests -p 'test_*.py' -v
             touch "$out"
           '';
           smoke = pkgs.runCommand "eidolon-smoke" { } ''
