@@ -123,9 +123,8 @@ The Babel compiler itself is implemented using Rust.
 
 ## Development
 
-The old `flake.lock` pointed at a pre-rename Ain compiler commit. It has been
-removed for the migration. Run `nix flake lock` to generate a fresh Babel lock
-before pinning a release or building offline.
+The Nix lock is pinned to Babel v0.3.1, rather than the old Ain compiler.
+Run `nix flake update babel` when intentionally updating the compiler.
 
 
 ```sh
