@@ -1,5 +1,5 @@
 {
-  description = "AinV: Babel-authored general video timeline and MP4 media compositor";
+  description = "Eidolon: Babel-authored general video timeline and MP4 media compositor";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   inputs.babel.url = "github:honerop/babel";
@@ -35,7 +35,7 @@
           pkgs = pkgsFor system;
           compiler = compilerFor system;
         in pkgs.stdenv.mkDerivation {
-          pname = "ainv-director";
+          pname = "eidolon-director";
           version = "0.2.0";
           src = ./.;
           dontConfigure = true;
@@ -43,14 +43,14 @@
           buildPhase = ''
             runHook preBuild
             ${compiler}/bin/babelc check director.babel
-            ${compiler}/bin/babelc build director.babel -o ainv
+            ${compiler}/bin/babelc build director.babel -o eidolon
             runHook postBuild
           '';
           installPhase = ''
             mkdir -p "$out/bin"
-            cp ainv "$out/bin/ainv-director"
+            cp eidolon "$out/bin/eidolon-director"
           '';
-          meta.mainProgram = "ainv-director";
+          meta.mainProgram = "eidolon-director";
         };
 
       appFor = system:
@@ -59,32 +59,32 @@
           director = directorFor system;
           python = pkgs.python3.withPackages (ps: [ ps.edge-tts ]);
           fonts = pkgs.makeFontsConf { fontDirectories = [ pkgs.dejavu_fonts ]; };
-        in pkgs.writeShellScriptBin "ainv" ''
+        in pkgs.writeShellScriptBin "eidolon" ''
           set -euo pipefail
-          export AINV_DEFAULT_SPEC="${./examples/general-showcase.json}"
-          export AINV_EDGE_TTS="${python}/bin/edge-tts"
-          export AINV_ESPEAK="${pkgs.espeak-ng}/bin/espeak-ng"
-          export AINV_FFPROBE="${pkgs.ffmpeg}/bin/ffprobe"
-          export AINV_FFMPEG="${pkgs.ffmpeg}/bin/ffmpeg"
-          export AINV_RSVG="${pkgs.librsvg}/bin/rsvg-convert"
-          export AINV_DIRNAME="${pkgs.coreutils}/bin/dirname"
+          export EIDOLON_DEFAULT_SPEC="${./examples/general-showcase.json}"
+          export EIDOLON_EDGE_TTS="${python}/bin/edge-tts"
+          export EIDOLON_ESPEAK="${pkgs.espeak-ng}/bin/espeak-ng"
+          export EIDOLON_FFPROBE="${pkgs.ffmpeg}/bin/ffprobe"
+          export EIDOLON_FFMPEG="${pkgs.ffmpeg}/bin/ffmpeg"
+          export EIDOLON_RSVG="${pkgs.librsvg}/bin/rsvg-convert"
+          export EIDOLON_DIRNAME="${pkgs.coreutils}/bin/dirname"
           export FONTCONFIG_FILE="${fonts}"
           export BABEL_PROCESS_TIMEOUT_MS=1800000
-          export AINV_WORK="$(mktemp -d)"
-          trap 'rm -rf "$AINV_WORK"' EXIT
-          "${director}/bin/ainv-director" "$@"
+          export EIDOLON_WORK="$(mktemp -d)"
+          trap 'rm -rf "$EIDOLON_WORK"' EXIT
+          "${director}/bin/eidolon-director" "$@"
         '';
     in {
       packages = eachSystem (system: {
         default = appFor system;
-        ainv = directorFor system;
+        eidolon = directorFor system;
         compiler = compilerFor system;
       });
 
       apps = eachSystem (system: {
         default = {
           type = "app";
-          program = "${appFor system}/bin/ainv";
+          program = "${appFor system}/bin/eidolon";
         };
       });
 
@@ -95,10 +95,10 @@
           app = appFor system;
         in {
           babel-director = director;
-          smoke = pkgs.runCommand "ainv-smoke" { } ''
+          smoke = pkgs.runCommand "eidolon-smoke" { } ''
             mkdir -p "$out"
             cd "$out"
-            "${app}/bin/ainv" "${./examples/babel-smoke.json}" "smoke.mp4"
+            "${app}/bin/eidolon" "${./examples/babel-smoke.json}" "smoke.mp4"
             test -s smoke.mp4
             test -s smoke.srt
             ${pkgs.ffmpeg}/bin/ffprobe -v error -show_entries stream=codec_name,width,height -of json smoke.mp4 > info.json

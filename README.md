@@ -1,9 +1,9 @@
-# AinV
+# Eidolon
 
-**AinV is a general-purpose, JSON-driven video generator written in Babel.** Build
+**Eidolon is a general-purpose, JSON-driven video generator written in Babel.** Build
 narrated explainers, motion graphics, image slideshows, social clips, tutorials,
 montages, and diagrams from the same timeline. Mathematical plotting is only
-one available drawing element. AinV is not a mathematics-only tool.
+one available drawing element. Eidolon is not a mathematics-only tool.
 
 Nix supplies the Babel compiler, media decoders/encoders, and narration engines.
 All video application logic stays in `director.babel`.
@@ -18,7 +18,7 @@ nix run github:honerop/ainv
 nix run github:honerop/ainv -- ./project.json ./movie.mp4
 
 # Render without neural or offline narration
-AINV_SKIP_TTS=1 nix run github:honerop/ainv -- ./project.json ./movie.mp4
+EIDOLON_SKIP_TTS=1 nix run github:honerop/ainv -- ./project.json ./movie.mp4
 ```
 
 Output is H.264 MP4 plus a separate SRT subtitle file. Narration uses Edge TTS
@@ -88,7 +88,7 @@ a local audio file (or a video file containing an audio stream). The scene's
 duration is extended if needed to avoid truncating audio. `music` specifies
 an optional global background track, looped and mixed at `music_volume`
 percent (default 15). `caption` overrides the subtitle text. Use
-`AINV_SKIP_TTS=1` to disable generated narration while keeping scene audio.
+`EIDOLON_SKIP_TTS=1` to disable generated narration while keeping scene audio.
 The engine emits a separate `.srt` file; it does not burn captions into frames.
 
 **Graphics:** supported `elements` are `text`, `rect`, `circle`,
@@ -123,13 +123,19 @@ The Babel compiler itself is implemented using Rust.
 
 ## Development
 
+**GitHub repository name:** Eidolon is the application name. GitHub still hosts it
+at `honerop/ainv` until the owner changes the repository name under
+**Settings → General → Repository name** to `eidolon`. After that, use
+`nix run github:honerop/eidolon` (the old URL should redirect).
+
+
 The Nix lock is pinned to Babel v0.3.1, rather than the old Ain compiler.
 Run `nix flake update babel` when intentionally updating the compiler.
 
 
 ```sh
 git clone https://github.com/honerop/ainv
-cd ainv
+cd ainv  # directory name until the GitHub repository is renamed
 nix develop
 babelc check director.babel
 nix flake check -L
